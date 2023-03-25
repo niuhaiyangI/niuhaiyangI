@@ -6,7 +6,7 @@ outfile="out_over.txt"
 out_file=open(outfile,'w+')
 class video:
     def __init__(self,cam):
-        self.cammera=cam
+        self.camera=cam
         self.threshold=0.65
         self.percent=0.95
         self.bin_div=8
@@ -32,7 +32,7 @@ class video:
         times = 0
         while True:
             times = times + 1
-            res, img = self.cammera.read()
+            res, img = self.camera.read()
             if not res:
                 print("over")
                 print(self.list)
@@ -45,7 +45,7 @@ class video:
         times=0
         while True:
             times=times+1
-            res,img=self.cammera.read()
+            res,img=self.camera.read()
             if not res:
                 print("over")
                 print(self.list)

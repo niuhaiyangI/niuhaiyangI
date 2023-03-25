@@ -6,11 +6,11 @@
 
 import cv2
 from Camera.finger_cover import video
+from Camera.divide import divide
 
 
 
-
-video_path="D:\\毕业设计\\实验素材\\7.mp4"
+video_path="D:\\毕业设计\\niuhaiyangI\\实验素材\\8.mp4"
 
 
 
@@ -27,7 +27,9 @@ if __name__ == '__main__':
         camera.open(video)
         if camera.isOpened():
             print("成功")
-    video=video(camera)
-    video.run()
+    div=divide(camera)
+    div.show_red_channel()
+    # video=video(camera)
+    # video.run()
 
 # See PyCharm help at https://www.jetbrains.com/help/pycharm/
