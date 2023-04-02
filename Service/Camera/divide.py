@@ -36,6 +36,7 @@ class divide:
             if not res:
                 break
             self.img_list.append(img)
+        self.pixel_num=self.img_list[0].shape[0]*self.img_list[0].shape[1]
         self.red_average = torch.zeros(self.frames_num)
         self.cal_red()
         self.slots_list,self.slots_size,self.score_average = self.get_slots()
@@ -45,10 +46,11 @@ class divide:
     def cal_red(self):
         for i in range(len(self.img_list)):
             img_tensor = torch.asarray(np.array(self.img_list[i]), dtype=torch.int).cuda()
-            self.red_average[i] = img_tensor.sum() / (img_tensor.shape[0] * img_tensor.shape[1])
+            self.red_average[i] = img_tensor[:,:,2].sum() / (img_tensor.shape[0] * img_tensor.shape[1])
             # print(self.red_average[i])
 
     def show_red_channel(self):
+        plt.close()
         x = range(self.frames_num)
         plt.plot(x, self.red_average, color='r', label='red_average')
         plt.show()
@@ -61,6 +63,7 @@ class divide:
         print("心脏跳动次数:" + str(self.slots_size))
         print("心脏实际跳动时间(单位：秒):" + str(self.real_pump_time))
         print("评估参数score:" + str(self.score_average))
+        print("pixel点数:" + str(self.pixel_num))
         print('Overdown')
 
     def get_slot(self, index):
@@ -79,7 +82,7 @@ class divide:
         index = self.get_slot(index)
         while index < self.frames_num:
             s_list.append(index)
-            print(str(index) + '均值为：' + str(self.red_average[index]))
+            # print(str(index) + '均值为：' + str(self.red_average[index]))
             index = self.get_slot(index + self.window_min)
         slots = []
         score_sum=0
@@ -88,7 +91,9 @@ class divide:
             temp_list = []
             for j in range(s_list[i], s_list[i+1] + 1):
                 temp_list.append(self.img_list[j])
-            slot = SLOT(s_list[i + 1] - s_list[i] + 1, temp_list, average)
-            score_sum=score_sum+slot.score
-            slots.append(slot)
+            slot = SLOT(s_list[i + 1] - s_list[i] + 1, temp_list, average,self.fps)
+            # slot.show()
+            if slot.Hz>=0.3 and slot.Hz<=10.0:
+                score_sum=score_sum+slot.score
+                slots.append(slot)
         return slots,len(s_list) - 1,score_sum/(len(s_list) - 1)

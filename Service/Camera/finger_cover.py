@@ -12,6 +12,7 @@ class video:
         self.bin_div=8
         self.list=[]
 
+    ##顺序为BGR及[B,G,R]对应[:,:,0],[:,:,1],[:,:,2]
     def red_capture(self,img):
         img_tensor = torch.asarray(np.array(img),dtype=torch.int).cuda()
         pr_tensor=img_tensor[:,:,2]/(img_tensor[:,:,0]+img_tensor[:,:,1]+img_tensor[:,:,2]).cuda()
