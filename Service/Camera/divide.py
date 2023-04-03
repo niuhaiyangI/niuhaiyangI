@@ -50,9 +50,11 @@ class divide:
             # print(self.red_average[i])
 
     def show_red_channel(self):
+        peak,_=signal.find_peaks(-self.red_average)
         plt.close()
         x = range(self.frames_num)
-        plt.plot(x, self.red_average, color='r', label='red_average')
+        plt.plot( peak,self.red_average[peak],"x", color='r', label='red_average')
+        plt.plot(x,self.red_average,"--",color='g')
         plt.show()
 
     def print(self):
@@ -66,6 +68,86 @@ class divide:
         print("pixel点数:" + str(self.pixel_num))
         print('Overdown')
 
+    # def get_slot(self, index):
+    #     if index >=self.frames_num:
+    #         return self.frames_num
+    #     slot_average = -self.red_average[index:index + self.window_max]
+    #     if index == 0:
+    #         return slot_average.argmax()
+    #     s_peak = signal.find_peaks(slot_average)
+    #     if len(s_peak[0]):
+    #         return s_peak[0][0] + index
+    #     else:
+    #         return self.get_slot(index+self.window_min)
+
+    # def get_slot(self,index):
+    #     if index >=self.frames_num:
+    #         return self.frames_num
+    #     slot_average = self.red_average[index:index + self.window_max]
+    #     if slot_average.argmin() is not None:
+    #         return slot_average.argmin()+index
+    #     else:
+    #         return index+1
+
+
+    def get_slots(self):
+        s_list = []
+        DN_list=[]
+        peak, _ = signal.find_peaks(-self.red_average)
+        times=0
+        for i in peak:
+            # print("this is peak")
+            # print(i)
+            if times%2==0:
+                s_list.append(i)
+            else:
+                DN_list.append(i)
+            times=times+1
+        slots = []
+        score_sum = 0
+        for i in range(len(s_list) - 1):
+            average = self.red_average[s_list[i]:s_list[i + 1] + 1]
+            temp_list = []
+            for j in range(s_list[i], s_list[i + 1] + 1):
+                # print(str(j)+" "+str(s_list[i])+" "+str(s_list[i+1])+" ")
+                temp_list.append(self.img_list[j])
+            slot = SLOT(s_list[i + 1] - s_list[i] + 1, temp_list, average, self.fps)
+            slot.DN_index=DN_list[i]
+            # slot.show()
+            slot.get_Systolic_DiastolicFeature()
+            if slot.Hz >= 0.3 and slot.Hz <= 10.0:
+                score_sum = score_sum + slot.score
+                slots.append(slot)
+        return slots, len(s_list) - 1, score_sum / (len(s_list) - 1)
+
+    # def get_slots(self):
+    #     peak,_=signal.find_peaks(-self.red_average)
+    #     index = 0
+    #     cont=0
+    #     s_list = []
+    #     index = self.get_slot(index)
+    #     while index < self.frames_num:
+    #         s_list.append(index)
+    #         # print(str(index) + '均值为：' + str(self.red_average[index]))
+    #         temp = self.get_slot(index+1)
+    #         while (temp-index)<self.window_min:
+    #             temp=self.get_slot(temp+1)
+    #         index=temp
+    #     slots = []
+    #     score_sum=0
+    #     for i in range(len(s_list) - 1):
+    #         average = self.red_average[s_list[i]:s_list[i + 1] + 1]
+    #         temp_list = []
+    #         for j in range(s_list[i], s_list[i+1] + 1):
+    #             temp_list.append(self.img_list[j])
+    #         slot = SLOT(s_list[i + 1] - s_list[i] + 1, temp_list, average,self.fps)
+    #         # slot.show()
+    #         # slot.get_Systolic_DiastolicFeature()
+    #         if slot.Hz>=0.3 and slot.Hz<=10.0:
+    #             score_sum=score_sum+slot.score
+    #             slots.append(slot)
+    #     return slots,len(s_list) - 1,score_sum/(len(s_list) - 1)
+
     def get_slot(self, index):
         slot_average = -self.red_average[index:index + self.window_max]
         if index == 0:
@@ -75,25 +157,25 @@ class divide:
             return s_peak[0][0] + index
         else:
             return index
-
-    def get_slots(self):
-        index = 0
-        s_list = []
-        index = self.get_slot(index)
-        while index < self.frames_num:
-            s_list.append(index)
-            # print(str(index) + '均值为：' + str(self.red_average[index]))
-            index = self.get_slot(index + self.window_min)
-        slots = []
-        score_sum=0
-        for i in range(len(s_list) - 1):
-            average = self.red_average[s_list[i]:s_list[i + 1] + 1]
-            temp_list = []
-            for j in range(s_list[i], s_list[i+1] + 1):
-                temp_list.append(self.img_list[j])
-            slot = SLOT(s_list[i + 1] - s_list[i] + 1, temp_list, average,self.fps)
-            # slot.show()
-            if slot.Hz>=0.3 and slot.Hz<=10.0:
-                score_sum=score_sum+slot.score
-                slots.append(slot)
-        return slots,len(s_list) - 1,score_sum/(len(s_list) - 1)
+    #
+    # def get_slots(self):
+    #     index = 0
+    #     s_list = []
+    #     index = self.get_slot(index)
+    #     while index < self.frames_num:
+    #         s_list.append(index)
+    #         # print(str(index) + '均值为：' + str(self.red_average[index]))
+    #         index = self.get_slot(index + self.window_min)
+    #     slots = []
+    #     score_sum=0
+    #     for i in range(len(s_list) - 1):
+    #         average = self.red_average[s_list[i]:s_list[i + 1] + 1]
+    #         temp_list = []
+    #         for j in range(s_list[i], s_list[i+1] + 1):
+    #             temp_list.append(self.img_list[j])
+    #         slot = SLOT(s_list[i + 1] - s_list[i] + 1, temp_list, average,self.fps)
+    #         # slot.show()
+    #         if slot.Hz>=0.3 and slot.Hz<=10.0:
+    #             score_sum=score_sum+slot.score
+    #             slots.append(slot)
+    #     return slots,len(s_list) - 1,score_sum/(len(s_list) - 1)

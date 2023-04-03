@@ -2,12 +2,14 @@ import torch
 from torchvision import transforms
 import numpy as np
 import matplotlib.pyplot as plt
+from scipy import signal
 class SLOT:
     def __init__(self, slot_size, s_list, red_average,fps):
         self.gama=15
         self.fps=fps
         self.slot_size=slot_size
         self.Hz=1.0/(slot_size/self.fps)
+        # print(1.0/self.Hz)
         self.slot_list=s_list
         self.red_average=red_average
         self.max_frame=s_list[self.red_average.argmax()]
@@ -20,6 +22,7 @@ class SLOT:
         self.M=(self.diff>self.gama)
         self.score=self._cal_score()
         self.W_c=self._cal_W()
+        self.DN_index=0
 
     def _cal_score(self):
         score=0
@@ -40,9 +43,36 @@ class SLOT:
     def show(self):
         plt.close()
         x=range(self.slot_size)
-        plt.plot(x,self.red_average, color='r', label='red_average')
+        plt.plot(x, self.red_average, color='r', label='red_average')
+        # plt.plot(x,self.W_c[:,2], color='r', label='red_average')
+        # plt.plot(x, self.W_c[:, 1], color='g', label='green_average')
+        # plt.plot(x, self.W_c[:, 0], color='b', label='blue_average')
         plt.show()
 
+    def _change(self,x):
+        return (x)/(self.slot_size-1)
 
+    def get_Systolic_DiastolicFeature(self):
+        x=(torch.tensor(range(self.slot_size)))/(self.slot_size-1)
+        red_channel=self.W_c[:,2]
+        green_channel=self.W_c[:,1]
+        blue_channel = self.W_c[:,0]
+        red_channel=(red_channel-red_channel.min())/(red_channel.max()-red_channel.min())
+        green_channel = (green_channel - green_channel.min()) / (green_channel.max() - green_channel.min())
+        blue_channel = (blue_channel - blue_channel.min()) / (blue_channel.max() - blue_channel.min())
+        plt.close()
+        plt.plot(x, red_channel, color='r', label='red_average')
+        plt.plot(x, green_channel, color='g', label='green_average')
+        plt.plot(x, blue_channel, color='b', label='blue_average')
+        plt.show()
+        red_list=[]
+        green_list=[]
+        blue_list=[]
+        index_r=red_channel.argmax()
+        index_g=green_channel.argmax()
+        index_b=blue_channel.argmax()
+
+
+    # def get_Non_fiducialFeature(self,slot):
 
 
