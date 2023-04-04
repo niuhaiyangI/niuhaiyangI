@@ -60,10 +60,13 @@ class SLOT:
         red_channel=(red_channel-red_channel.min())/(red_channel.max()-red_channel.min())
         green_channel = (green_channel - green_channel.min()) / (green_channel.max() - green_channel.min())
         blue_channel = (blue_channel - blue_channel.min()) / (blue_channel.max() - blue_channel.min())
+        sum=self.W_c.sum(dim=1)/3
+        sum=(sum - sum.min()) / (sum.max() - sum.min())
         plt.close()
         plt.plot(x, red_channel, color='r', label='red_average')
         plt.plot(x, green_channel, color='g', label='green_average')
         plt.plot(x, blue_channel, color='b', label='blue_average')
+        plt.plot(x, sum, color='black', label='blue_average')
         plt.show()
         red_list=[]
         green_list=[]

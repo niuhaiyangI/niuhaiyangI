@@ -6,6 +6,7 @@ import matplotlib.pyplot as plt
 # plt.ion()
 import cv2
 from scipy import signal
+import pandas as pd
 
 # 获取数据帧数量
 # frames = videoCapture.get(cv2.CAP_PROP_FRAME_COUNT)
@@ -53,7 +54,16 @@ class divide:
         peak,_=signal.find_peaks(-self.red_average)
         plt.close()
         x = range(self.frames_num)
-        plt.plot( peak,self.red_average[peak],"x", color='r', label='red_average')
+        Series = pd.Series(self.red_average)
+        print(Series)
+        plt.figure(figsize=(16,10))
+        rol = Series.rolling(window=self.window_min).mean()
+        print(rol)
+        peak2,_=signal.find_peaks(-rol)
+        plt.plot(peak2, rol[peak2], "x", color='black', label='red_average')
+        plt.plot(peak, self.red_average[peak], "x", color='r', label='red_average')
+        plt.plot(x, rol, color='b')
+        # plt.plot( range(self.frames_num-self.window_min), rol[self.window_min-1:-1], color='b')
         plt.plot(x,self.red_average,"--",color='g')
         plt.show()
 
@@ -114,7 +124,7 @@ class divide:
             slot = SLOT(s_list[i + 1] - s_list[i] + 1, temp_list, average, self.fps)
             slot.DN_index=DN_list[i]
             # slot.show()
-            slot.get_Systolic_DiastolicFeature()
+            # slot.get_Systolic_DiastolicFeature()
             if slot.Hz >= 0.3 and slot.Hz <= 10.0:
                 score_sum = score_sum + slot.score
                 slots.append(slot)
