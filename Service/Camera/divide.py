@@ -43,7 +43,7 @@ class divide:
         self.red_average = torch.zeros(self.frames_num)
         self.cal_red()
         self.peak,_=signal.find_peaks(-self.red_average)
-        self.slots_list,self.slots_size,self.score_average,self.heart_pump_frames = self.get_slots()
+        self.slots_list,self.slots_size,self.score_average,self.heart_pump_frames,self.divide = self.get_slots()
         self.real_pump_time=((self.heart_pump_frames)/self.fps)/self.slots_size
         self.print()
 
@@ -51,6 +51,13 @@ class divide:
         for i in range(len(self.img_list)):
             img_tensor = torch.asarray(np.array(self.img_list[i]), dtype=torch.int).cuda()
             self.red_average[i] = img_tensor[:,:,2].sum() / (img_tensor.shape[0] * img_tensor.shape[1])
+        b, a = signal.butter(10, [2 * (0.3 / 30), 2 * (10.0 / 30)], btype='bandpass')
+        b, a = signal.butter(11, [0.3,10.0], btype='bandpass',fs=30)
+        temp=signal.filtfilt(b,a,self.red_average)
+        plt.close()
+        plt.plot(range(self.frames_num),temp,color='b')
+        # plt.plot(range(self.frames_num),self.red_average,color='r')
+        plt.show()
             # print(self.red_average[i])
 
     def show_red_channel(self):
@@ -137,7 +144,7 @@ class divide:
                 slot.get_Non_fiducialFeature()
                 score_sum = score_sum + slot.score
                 slots.append(slot)
-        return slots, len(slots) , score_sum / len(slots),pump_frames
+        return slots, len(slots) , score_sum / len(slots),pump_frames,s_list
 
     # def get_slots(self):
     #     pump_frames = 0
