@@ -7,9 +7,11 @@ from scipy import signal
 from scipy.fftpack import fft,ifft
 class SLOT:
     def __init__(self, slot_size, s_list, red_average,fps):
-        self.gama=15
+        self.gama=5
         self.fps=fps
         self.slot_size=slot_size
+        self.W_c1=torch.zeros([self.slot_size,3])
+        self.W_c2 = torch.zeros([self.slot_size, 3])
         self.Hz=1.0/(slot_size/self.fps)
         self.heart_time=slot_size/self.fps
         # print(1.0/self.Hz)
@@ -73,23 +75,16 @@ class SLOT:
     def _cal_score(self):
         score=0
         for i in range(self.bin_size):
-            score=score+i*i*(((self.diff>=self.bin[i])&(self.diff<self.bin[i+1])).sum()/(self.diff.shape[0]*self.diff.shape[1]))
+            score=score+i*i*(((self.diff[:,:,2]>=self.bin[i])&(self.diff[:,:,2]<self.bin[i+1])).sum()/(self.diff.shape[0]*self.diff.shape[1]))
         # print(score)
         return score
 
     def _cal_W(self):
-        plt.close()
-        plt.plot(range(self.slot_size),self.red_average,color='r')
-        plt.show()
         W_list=[]
         for img in self.slot_list:
             temp=torch.tensor(img*self.M).cuda().sum(dim=(0,1))/torch.tensor(self.M).cuda().sum(dim=(0,1))
             W_list.append(temp.tolist())
         W_list=torch.tensor(W_list)
-        # x=range(self.slot_size)
-        # plt.close()
-        # plt.plot(x, self.red_average, color='r', label='red_average')
-        # plt.show()
         red_channel=W_list[:,2]
         green_channel=W_list[:,1]
         blue_channel = W_list[:,0]
@@ -99,35 +94,36 @@ class SLOT:
         # red_channel = (red_channel - red_channel.min())
         # green_channel = (green_channel - green_channel.min())
         # blue_channel = (blue_channel - blue_channel.min())
-        b, a = signal.butter(11, [0.3,10.0], btype='bandpass',fs=30)
+        b, a = signal.butter(20, [0.3,10.0], btype='bandpass',fs=30)
+        zi=signal.lfilter_zi(b,a)
         # red_channel=signal.filtfilt(b,a,red_channel)
         # green_channel = signal.filtfilt(b, a, green_channel)
         # blue_channel = signal.filtfilt(b,a,blue_channel)
         # red_channel=self._bandpass(0.3,10.0,red_channel)
         # green_channel = self._bandpass(0.3, 10.0, green_channel)
         # blue_channel = self._bandpass(0.3, 10.0, blue_channel)
-        red_channel=signal.filtfilt(b,a,red_channel.tolist(),axis=0,method='gust')
-        green_channel = signal.filtfilt(b, a, green_channel.tolist(),axis=0,method='gust')
-        blue_channel = signal.filtfilt(b,a,blue_channel.tolist(),axis=0,method='gust')
+        # red_channel=signal.filtfilt(b,a,red_channel.tolist(),axis=0,method='gust')
+        # green_channel = signal.filtfilt(b, a, green_channel.tolist(),axis=0,method='gust')
+        # blue_channel = signal.filtfilt(b,a,blue_channel.tolist(),axis=0,method='gust')
         # red_channel,_=signal.lfilter(b,a,red_channel,zi=zi*red_channel.tolist()[0])
         # green_channel,_ = signal.lfilter(b, a, green_channel,zi=zi*green_channel.tolist()[0])
         # blue_channel,_ = signal.lfilter(b,a,blue_channel,zi=zi*blue_channel.tolist()[0])
         # red_channel= signal.lfilter(b, a, red_channel)
         # green_channel = signal.lfilter(b, a, green_channel)
         # blue_channel = signal.lfilter(b, a, blue_channel)
-        x=range(self.slot_size)
-        plt.close()
-        plt.plot(x, red_channel, color='pink', label='red_average')
-        # plt.plot(x, W_list[:,2], color='r', label='red_average')
-        plt.show()
+        # x=range(self.slot_size)
+        # plt.close()
+        # plt.plot(x, red_channel, color='pink', label='red_average')
+        # # plt.plot(x, W_list[:,2], color='r', label='red_average')
+        # plt.show()
         # sos= signal.butter(10,0.3, btype='highpass',fs=self.slot_size,output='sos')
         # zi=signal.sosfilt_zi(sos)
         # red_channel,_=signal.sosfilt(sos,red_channel,zi=zi)
         # green_channel,_ = signal.sosfilt(sos, green_channel,zi=zi)
         # blue_channel,_ = signal.sosfilt(sos,blue_channel,zi=zi)
-        W_list[:,2]=torch.tensor(red_channel.copy())
-        W_list[:,1]=torch.tensor(green_channel.copy())
-        W_list[:,0]=torch.tensor(blue_channel.copy())
+        # W_list[:,2]=torch.tensor(red_channel.copy())
+        # W_list[:,1]=torch.tensor(green_channel.copy())
+        # W_list[:,0]=torch.tensor(blue_channel.copy())
         W_list.cuda()
         return W_list
 
@@ -166,26 +162,102 @@ class SLOT:
         red_channel = self.W_c[:, 2]
         green_channel = self.W_c[:, 1]
         blue_channel = self.W_c[:, 0]
+        ones=torch.ones(self.slot_size)
         # red_channel = (red_channel - red_channel.min()) / (red_channel.max() - red_channel.min())
         # green_channel = (green_channel - green_channel.min()) / (green_channel.max() - green_channel.min())
         # blue_channel = (blue_channel - blue_channel.min()) / (blue_channel.max() - blue_channel.min())
         # b1,a1=signal.butter(3,2*(1/self.fps),btype='high')
-        b1, a1 = signal.butter(17, 1, btype='highpass', fs=30)
-        b2, a2 = signal.butter(23, 2, btype='highpass',fs=30)
-        # # sf_r1=signal.lfilter(b1,a1,red_channel)
-        # # sf_r2 = signal.lfilter(b2, a2, red_channel)
-        sf_r1=signal.filtfilt(b1,a1,red_channel.tolist(),method='gust')
-        sf_r2 = signal.filtfilt(b2, a2, red_channel.tolist(), method='gust')
-        # sf_r1=self._highpass(1,red_channel)
-        # sf_r2 = self._highpass(2, red_channel)
+        b1, a1 = signal.butter(7, 1, btype='highpass', fs=self.slot_size)
+        b2, a2 = signal.butter(7, 2, btype='highpass',fs=self.slot_size)
+        sf_r1=signal.lfilter(b1,a1,red_channel.tolist())
+        sf_r2 = signal.lfilter(b2, a2, red_channel.tolist())
+        # sf_r1=signal.filtfilt(b1,a1,red_channel.tolist(),method='gust')
+        # sf_r2 = signal.filtfilt(b2, a2, red_channel.tolist(), method='gust')
         sf_r1_rolling=pd.Series(sf_r1).rolling(window=self.rolling_window).mean()
         sf_r2_rolling = pd.Series(sf_r2).rolling(window=self.rolling_window).mean()
         peak_r1,_=signal.find_peaks(-sf_r1_rolling)
         peak_r2, _ = signal.find_peaks(-sf_r2_rolling)
-        # print(sf_r1)
         plt.close()
         plt.plot(x, sf_r1, color='r', label='green_average')
         plt.plot(x, sf_r2, color='b', label='green_average')
+        plt.show()
+
+    def show_Wc(self):
+        print('show start')
+        print(self.W_c)
+        x = (torch.tensor(range(self.slot_size))) / (self.slot_size - 1)
+        red_channel = self.W_c[:, 2]
+        green_channel = self.W_c[:, 1]
+        blue_channel = self.W_c[:, 0]
+        red_channel = (red_channel - red_channel.min()) / (red_channel.max() - red_channel.min())
+        green_channel = (green_channel - green_channel.min()) / (green_channel.max() - green_channel.min())
+        blue_channel = (blue_channel - blue_channel.min()) / (blue_channel.max() - blue_channel.min())
+        sum=(red_channel+green_channel+blue_channel)/3
+        plt.close()
+        # plt.plot(x, self.W_c[:,2],color='pink')
+        plt.plot(x, red_channel.tolist(), color='r', label='red_average')
+        plt.plot(x, green_channel.tolist(), color='g', label='green_average')
+        plt.plot(x, blue_channel.tolist(), color='b', label='blue_average')
+        plt.plot(x, sum.tolist(), color='black', label='blue_average')
+        Series = pd.Series(sum.tolist())
+        # rol = Series.rolling(window=5).mean()
+        peak, _ = signal.find_peaks(sum.tolist())
+        peak2, _ = signal.find_peaks((-sum).tolist())
+        # plt.plot(x, rol, color='pink', label='blue_average')
+        plt.plot(x[peak], sum[peak].tolist(), "x", color='black',label='blue_average')
+        plt.plot(x[peak2], sum[peak2].tolist(), "x", color='pink', label='blue_average')
+        plt.show()
+
+    def show_Wc1(self):
+        print('show1 start')
+        print(self.W_c1)
+        x = (torch.tensor(range(self.slot_size))) / (self.slot_size - 1)
+        red_channel = self.W_c1[:, 2]
+        green_channel = self.W_c1[:, 1]
+        blue_channel = self.W_c1[:, 0]
+        red_channel = (red_channel - red_channel.min()) / (red_channel.max() - red_channel.min())
+        green_channel = (green_channel - green_channel.min()) / (green_channel.max() - green_channel.min())
+        blue_channel = (blue_channel - blue_channel.min()) / (blue_channel.max() - blue_channel.min())
+        sum=(red_channel+green_channel+blue_channel)/3
+        plt.close()
+        # plt.plot(x, self.W_c[:,2],color='pink')
+        plt.plot(x, red_channel.tolist(), color='r', label='red_average')
+        plt.plot(x, green_channel.tolist(), color='g', label='green_average')
+        plt.plot(x, blue_channel.tolist(), color='b', label='blue_average')
+        plt.plot(x, sum.tolist(), color='black', label='blue_average')
+        Series = pd.Series(sum.tolist())
+        rol = Series.rolling(window=5).mean()
+        peak, _ = signal.find_peaks(sum.tolist())
+        peak2, _ = signal.find_peaks((-sum).tolist())
+        # plt.plot(x, rol, color='pink', label='blue_average')
+        plt.plot(x[peak], sum[peak].tolist(), "x", color='black',label='blue_average')
+        plt.plot(x[peak2], sum[peak2].tolist(), "x", color='pink', label='blue_average')
+        plt.show()
+
+    def show_Wc2(self):
+        print('show2 start')
+        print(self.W_c2)
+        x = (torch.tensor(range(self.slot_size))) / (self.slot_size - 1)
+        red_channel = self.W_c2[:, 2]
+        green_channel = self.W_c2[:, 1]
+        blue_channel = self.W_c2[:, 0]
+        red_channel = (red_channel - red_channel.min()) / (red_channel.max() - red_channel.min())
+        green_channel = (green_channel - green_channel.min()) / (green_channel.max() - green_channel.min())
+        blue_channel = (blue_channel - blue_channel.min()) / (blue_channel.max() - blue_channel.min())
+        sum=(red_channel+green_channel+blue_channel)/3
+        plt.close()
+        # plt.plot(x, self.W_c[:,2],color='pink')
+        plt.plot(x, red_channel.tolist(), color='r', label='red_average')
+        plt.plot(x, green_channel.tolist(), color='g', label='green_average')
+        plt.plot(x, blue_channel.tolist(), color='b', label='blue_average')
+        plt.plot(x, sum.tolist(), color='black', label='blue_average')
+        Series = pd.Series(sum.tolist())
+        rol = Series.rolling(window=5).mean()
+        peak, _ = signal.find_peaks(sum.tolist())
+        peak2, _ = signal.find_peaks((-sum).tolist())
+        # plt.plot(x, rol, color='pink', label='blue_average')
+        plt.plot(x[peak], sum[peak].tolist(), "x", color='black',label='blue_average')
+        plt.plot(x[peak2], sum[peak2].tolist(), "x", color='pink', label='blue_average')
         plt.show()
 
 

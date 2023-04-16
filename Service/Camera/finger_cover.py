@@ -8,7 +8,7 @@ class video:
     def __init__(self,cam):
         self.camera=cam
         self.threshold=0.65
-        self.percent=0.95
+        self.percent=0.80
         self.bin_div=8
         self.list=[]
 

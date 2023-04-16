@@ -18,7 +18,7 @@ from Camera.differentiation import SLOT
 class divide:
     def __init__(self, cam):
         print("SLOT devide starting....")
-        self.distance=3
+        self.distance=4
         self.rolling_window=2*self.distance+1
         self.heart_pump_seconds = 0.8  ##心脏跳动时间
         self.heart_pump_max = 1.3
@@ -43,21 +43,22 @@ class divide:
         self.red_average = torch.zeros(self.frames_num)
         self.cal_red()
         self.peak,_=signal.find_peaks(-self.red_average)
-        self.slots_list,self.slots_size,self.score_average,self.heart_pump_frames,self.divide = self.get_slots()
+        self.slots_list,self.slots_size,self.score_average,self.heart_pump_frames,self.divide,self.W_c = self.get_slots()
         self.real_pump_time=((self.heart_pump_frames)/self.fps)/self.slots_size
+        self.run()
         self.print()
 
     def cal_red(self):
         for i in range(len(self.img_list)):
             img_tensor = torch.asarray(np.array(self.img_list[i]), dtype=torch.int).cuda()
             self.red_average[i] = img_tensor[:,:,2].sum() / (img_tensor.shape[0] * img_tensor.shape[1])
-        b, a = signal.butter(10, [2 * (0.3 / 30), 2 * (10.0 / 30)], btype='bandpass')
-        b, a = signal.butter(11, [0.3,10.0], btype='bandpass',fs=30)
-        temp=signal.filtfilt(b,a,self.red_average)
-        plt.close()
-        plt.plot(range(self.frames_num),temp,color='b')
-        # plt.plot(range(self.frames_num),self.red_average,color='r')
-        plt.show()
+        # b, a = signal.butter(10, [2 * (0.3 / 30), 2 * (10.0 / 30)], btype='bandpass')
+        # b, a = signal.butter(10, [0.3,10.0], btype='bandpass',fs=30)
+        # temp=signal.filtfilt(b,a,self.red_average)
+        # plt.close()
+        # plt.plot(range(self.frames_num),temp,color='b')
+        # # plt.plot(range(self.frames_num),self.red_average,color='r')
+        # plt.show()
             # print(self.red_average[i])
 
     def show_red_channel(self):
@@ -89,26 +90,6 @@ class divide:
         print("pixel点数:" + str(self.pixel_num))
         print('Overdown')
 
-    # def get_slot(self, index):
-    #     if index >=self.frames_num:
-    #         return self.frames_num
-    #     slot_average = -self.red_average[index:index + self.window_max]
-    #     if index == 0:
-    #         return slot_average.argmax()
-    #     s_peak = signal.find_peaks(slot_average)
-    #     if len(s_peak[0]):
-    #         return s_peak[0][0] + index
-    #     else:
-    #         return self.get_slot(index+self.window_min)
-
-    # def get_slot(self,index):
-    #     if index >=self.frames_num:
-    #         return self.frames_num
-    #     slot_average = self.red_average[index:index + self.window_max]
-    #     if slot_average.argmin() is not None:
-    #         return slot_average.argmin()+index
-    #     else:
-    #         return index+1
 
     def _get_closest_point(self,index):
         index_temp=index-self.distance
@@ -119,7 +100,7 @@ class divide:
         return index
 
     def get_slots(self):
-        print(self.peak)
+        W_c=[]
         pump_frames=0
         Series = pd.Series(self.red_average)
         rol = Series.rolling(window=self.rolling_window).mean()
@@ -140,73 +121,65 @@ class divide:
             if slot.slot_size >= self.window_min and slot.slot_size <= self.window_max:
             # if slot.Hz > (1/self.heart_pump_max) and slot.Hz <(1/self.heart_pump_min):
                 pump_frames=pump_frames+slot.slot_size
-                slot.get_Systolic_DiastolicFeature()
-                slot.get_Non_fiducialFeature()
+                # slot.get_Systolic_DiastolicFeature()
+                # slot.get_Non_fiducialFeature()
                 score_sum = score_sum + slot.score
                 slots.append(slot)
-        return slots, len(slots) , score_sum / len(slots),pump_frames,s_list
+                W_c=W_c+slot.W_c.tolist()
+        W_c=torch.tensor(W_c).cuda()
+        return slots, len(slots) , score_sum / len(slots),pump_frames,s_list,W_c
 
-    # def get_slots(self):
-    #     pump_frames = 0
-    #     b, a = signal.butter(1,1, btype='highpass', fs=self.frames_num)
-    #     sf=signal.lfilter(b,a,self.red_average)
-    #     peak, _ = signal.find_peaks(-sf)
-    #     x=range(self.frames_num)
-    #     plt.close()
-    #     plt.plot(x,sf,color='r')
-    #     plt.plot(peak,sf[peak],"x",color="black")
-    #     plt.plot(x,self.red_average,"--",color='g')
-    #     plt.show()
-    #     s_list = []
-    #     for i in peak:
-    #         s_list.append(i)
-    #     slots = []
-    #     score_sum = 0
-    #     for i in range(len(s_list) - 1):
-    #         average = self.red_average[s_list[i]:s_list[i + 1] + 1]
-    #         temp_list = []
-    #         for j in range(s_list[i], s_list[i + 1] + 1):
-    #             # print(str(j)+" "+str(s_list[i])+" "+str(s_list[i+1])+" ")
-    #             temp_list.append(self.img_list[j])
-    #         slot = SLOT(s_list[i + 1] - s_list[i] + 1, temp_list, average, self.fps)
-    #         # slot.show()
-    #         if slot.slot_size >= self.window_min and slot.slot_size <= self.window_max:
-    #             # if slot.Hz > (1/self.heart_pump_max) and slot.Hz <(1/self.heart_pump_min):
-    #             pump_frames = pump_frames + slot.slot_size
-    #             slot.get_Systolic_DiastolicFeature()
-    #             slot.get_Non_fiducialFeature()
-    #             score_sum = score_sum + slot.score
-    #             slots.append(slot)
-    #     return slots, len(slots), score_sum / len(slots), pump_frames
+    def band_pass(self):
+        # b, a = signal.butter(10, [0.3, 10.0], btype='bandpass', fs=30)
+        b, a = signal.butter(10, 0.3, btype='highpass', fs=15)
+        r = signal.filtfilt(b, a, self.W_c[:,2].tolist())
+        g = signal.filtfilt(b, a, self.W_c[:, 1].tolist())
+        b = signal.filtfilt(b, a, self.W_c[:, 0].tolist())
+        self.W_c[:,2]=torch.tensor(r.copy()).cuda()
+        self.W_c[:, 1] = torch.tensor(g.copy()).cuda()
+        self.W_c[:, 0] = torch.tensor(b.copy()).cuda()
+        index=0
+        for slot in self.slots_list:
+            slot.W_c=self.W_c[index:index+slot.slot_size]
+            index=index+slot.slot_size
+            # slot.show_Wc()
 
-    def get_slot(self, index):
-        slot_average = -self.red_average[index:index + self.window_max]
-        if index == 0:
-            return slot_average.argmax()
-        s_peak = signal.find_peaks(slot_average)
-        if len(s_peak[0]):
-            return s_peak[0][0] + index
-        else:
-            return index
-    #
-    # def get_slots(self):
-    #     index = 0
-    #     s_list = []
-    #     index = self.get_slot(index)
-    #     while index < self.frames_num:
-    #         s_list.append(index)
-    #         # print(str(index) + '均值为：' + str(self.red_average[index]))
-    #         index = self.get_slot(index + self.window_min)
-    #     slots = []
-    #     score_sum=0
-    #     for i in range(len(s_list) - 1):
-    #         average = self.red_average[s_list[i]:s_list[i + 1] + 1]
-    #         temp_list = []
-    #         for j in range(s_list[i], s_list[i+1] + 1):
-    #             temp_list.append(self.img_list[j])
-    #         slot = SLOT(s_list[i + 1] - s_list[i] + 1, temp_list, average,self.fps)
-    #         # slot.show()
-    #         if slot.Hz>=0.3 and slot.Hz<=10.0:
-    #             score_sum=score_sum+slot.score
-    #             slots.append(slot)
-    #     return slots,len(s_list) - 1,score_sum/(len(s_list) - 1)
+    def high_pass1(self):
+        # for slot in self.slots_list:
+        #     slot.get_Non_fiducialFeature()
+        T_Wc=torch.zeros([self.W_c.shape[0],3])
+        b, a = signal.butter(10, 1, btype='highpass', fs=12)
+        # r = signal.lfilter(b, a, self.W_c[:, 2].tolist())
+        # g = signal.lfilter(b, a, self.W_c[:, 1].tolist())
+        # b = signal.lfilter(b, a, self.W_c[:, 0].tolist())
+        r = signal.filtfilt(b, a, self.W_c[:, 2].tolist())
+        g = signal.filtfilt(b, a, self.W_c[:, 1].tolist())
+        b = signal.filtfilt(b, a, self.W_c[:, 0].tolist())
+        T_Wc[:, 2] = torch.tensor(r.copy()).cuda()
+        T_Wc[:, 1] = torch.tensor(g.copy()).cuda()
+        T_Wc[:, 0] = torch.tensor(b.copy()).cuda()
+        index = 0
+        for slot in self.slots_list:
+            slot.W_c1 = T_Wc[index:index + slot.slot_size]
+            index = index + slot.slot_size
+            slot.show_Wc1()
+
+    def high_pass2(self):
+        T_Wc = torch.zeros([self.W_c.shape[0], 3])
+        b, a = signal.butter(20, 2, btype='highpass', fs=15)
+        r = signal.filtfilt(b, a, self.W_c[:, 2].tolist())
+        g = signal.filtfilt(b, a, self.W_c[:, 1].tolist())
+        b = signal.filtfilt(b, a, self.W_c[:, 0].tolist())
+        T_Wc[:, 2] = torch.tensor(r.copy()).cuda()
+        T_Wc[:, 1] = torch.tensor(g.copy()).cuda()
+        T_Wc[:, 0] = torch.tensor(b.copy()).cuda()
+        index = 0
+        for slot in self.slots_list:
+            slot.W_c2 = T_Wc[index:index + slot.slot_size]
+            index = index + slot.slot_size
+            slot.show_Wc2()
+
+    def run(self):
+        self.band_pass()
+        self.high_pass1()
+        self.high_pass2()
