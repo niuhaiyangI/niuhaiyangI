@@ -10,7 +10,7 @@ from Camera.divide import divide
 
 
 
-video_path="D:\\毕业设计\\niuhaiyangI\\实验素材\\8.mp4"
+video_path="D:\\毕业设计\\niuhaiyangI\\实验素材\\12.mp4"
 
 
 

@@ -184,7 +184,6 @@ class SLOT:
 
     def show_Wc(self):
         print('show start')
-        print(self.W_c)
         x = (torch.tensor(range(self.slot_size))) / (self.slot_size - 1)
         red_channel = self.W_c[:, 2]
         green_channel = self.W_c[:, 1]
@@ -195,22 +194,23 @@ class SLOT:
         sum=(red_channel+green_channel+blue_channel)/3
         plt.close()
         # plt.plot(x, self.W_c[:,2],color='pink')
-        plt.plot(x, red_channel.tolist(), color='r', label='red_average')
-        plt.plot(x, green_channel.tolist(), color='g', label='green_average')
-        plt.plot(x, blue_channel.tolist(), color='b', label='blue_average')
-        plt.plot(x, sum.tolist(), color='black', label='blue_average')
-        Series = pd.Series(sum.tolist())
-        # rol = Series.rolling(window=5).mean()
-        peak, _ = signal.find_peaks(sum.tolist())
-        peak2, _ = signal.find_peaks((-sum).tolist())
-        # plt.plot(x, rol, color='pink', label='blue_average')
-        plt.plot(x[peak], sum[peak].tolist(), "x", color='black',label='blue_average')
-        plt.plot(x[peak2], sum[peak2].tolist(), "x", color='pink', label='blue_average')
+        # plt.plot(x, red_channel.tolist(), color='r', label='red_average')
+        # plt.plot(x, green_channel.tolist(), color='g', label='green_average')
+        # plt.plot(x, blue_channel.tolist(), color='b', label='blue_average')
+        check=sum
+        # check=red_channel
+        plt.plot(x, check.tolist(), color='black', label='blue_average')
+        Series = pd.Series(check.tolist())
+        rol = Series.rolling(window=3).mean()
+        peak, _ = signal.find_peaks(check.tolist())
+        peak2, _ = signal.find_peaks((-check).tolist())
+        plt.plot(x, rol, color='pink', label='blue_average')
+        plt.plot(x[peak], check[peak].tolist(), "x", color='black',label='blue_average')
+        plt.plot(x[peak2], check[peak2].tolist(), "x", color='pink', label='blue_average')
         plt.show()
 
     def show_Wc1(self):
         print('show1 start')
-        print(self.W_c1)
         x = (torch.tensor(range(self.slot_size))) / (self.slot_size - 1)
         red_channel = self.W_c1[:, 2]
         green_channel = self.W_c1[:, 1]
@@ -221,22 +221,23 @@ class SLOT:
         sum=(red_channel+green_channel+blue_channel)/3
         plt.close()
         # plt.plot(x, self.W_c[:,2],color='pink')
-        plt.plot(x, red_channel.tolist(), color='r', label='red_average')
-        plt.plot(x, green_channel.tolist(), color='g', label='green_average')
-        plt.plot(x, blue_channel.tolist(), color='b', label='blue_average')
-        plt.plot(x, sum.tolist(), color='black', label='blue_average')
-        Series = pd.Series(sum.tolist())
-        rol = Series.rolling(window=5).mean()
-        peak, _ = signal.find_peaks(sum.tolist())
-        peak2, _ = signal.find_peaks((-sum).tolist())
-        # plt.plot(x, rol, color='pink', label='blue_average')
-        plt.plot(x[peak], sum[peak].tolist(), "x", color='black',label='blue_average')
-        plt.plot(x[peak2], sum[peak2].tolist(), "x", color='pink', label='blue_average')
+        # plt.plot(x, red_channel.tolist(), color='r', label='red_average')
+        # plt.plot(x, green_channel.tolist(), color='g', label='green_average')
+        # plt.plot(x, blue_channel.tolist(), color='b', label='blue_average')
+        check=sum
+        # check=red_channel
+        plt.plot(x, check.tolist(), color='black', label='blue_average')
+        Series = pd.Series(check.tolist())
+        rol = Series.rolling(window=3).mean()
+        peak, _ = signal.find_peaks(check.tolist())
+        peak2, _ = signal.find_peaks((-check).tolist())
+        plt.plot(x, rol, color='pink', label='blue_average')
+        plt.plot(x[peak], check[peak].tolist(), "x", color='black',label='blue_average')
+        plt.plot(x[peak2], check[peak2].tolist(), "x", color='pink', label='blue_average')
         plt.show()
 
     def show_Wc2(self):
         print('show2 start')
-        print(self.W_c2)
         x = (torch.tensor(range(self.slot_size))) / (self.slot_size - 1)
         red_channel = self.W_c2[:, 2]
         green_channel = self.W_c2[:, 1]
@@ -247,17 +248,19 @@ class SLOT:
         sum=(red_channel+green_channel+blue_channel)/3
         plt.close()
         # plt.plot(x, self.W_c[:,2],color='pink')
-        plt.plot(x, red_channel.tolist(), color='r', label='red_average')
-        plt.plot(x, green_channel.tolist(), color='g', label='green_average')
-        plt.plot(x, blue_channel.tolist(), color='b', label='blue_average')
-        plt.plot(x, sum.tolist(), color='black', label='blue_average')
-        Series = pd.Series(sum.tolist())
-        rol = Series.rolling(window=5).mean()
-        peak, _ = signal.find_peaks(sum.tolist())
-        peak2, _ = signal.find_peaks((-sum).tolist())
-        # plt.plot(x, rol, color='pink', label='blue_average')
-        plt.plot(x[peak], sum[peak].tolist(), "x", color='black',label='blue_average')
-        plt.plot(x[peak2], sum[peak2].tolist(), "x", color='pink', label='blue_average')
+        # plt.plot(x, red_channel.tolist(), color='r', label='red_average')
+        # plt.plot(x, green_channel.tolist(), color='g', label='green_average')
+        # plt.plot(x, blue_channel.tolist(), color='b', label='blue_average')
+        check=sum
+        # check=red_channel
+        plt.plot(x, check.tolist(), color='black', label='blue_average')
+        Series = pd.Series(check.tolist())
+        rol = Series.rolling(window=3).mean()
+        peak, _ = signal.find_peaks(check.tolist())
+        peak2, _ = signal.find_peaks((-check).tolist())
+        plt.plot(x, rol, color='pink', label='blue_average')
+        plt.plot(x[peak], check[peak].tolist(), "x", color='black',label='blue_average')
+        plt.plot(x[peak2], check[peak2].tolist(), "x", color='pink', label='blue_average')
         plt.show()
 
 

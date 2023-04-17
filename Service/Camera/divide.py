@@ -1,3 +1,4 @@
+import math
 import os
 import torch
 from torchvision import transforms
@@ -130,11 +131,11 @@ class divide:
         return slots, len(slots) , score_sum / len(slots),pump_frames,s_list,W_c
 
     def band_pass(self):
-        # b, a = signal.butter(10, [0.3, 10.0], btype='bandpass', fs=30)
-        b, a = signal.butter(10, 0.3, btype='highpass', fs=15)
-        r = signal.filtfilt(b, a, self.W_c[:,2].tolist())
-        g = signal.filtfilt(b, a, self.W_c[:, 1].tolist())
-        b = signal.filtfilt(b, a, self.W_c[:, 0].tolist())
+        b, a = signal.butter(10, [0.3, 10], btype='bandpass',fs=21)
+        # b, a = signal.butter(10, 0.3*2, btype='highpass',fs=30)
+        r = signal.filtfilt(b, a, self.W_c[:,2].tolist(),padtype='odd')
+        g = signal.filtfilt(b, a, self.W_c[:, 1].tolist(),padtype='odd')
+        b = signal.filtfilt(b, a, self.W_c[:, 0].tolist(),padtype='odd')
         self.W_c[:,2]=torch.tensor(r.copy()).cuda()
         self.W_c[:, 1] = torch.tensor(g.copy()).cuda()
         self.W_c[:, 0] = torch.tensor(b.copy()).cuda()
@@ -142,19 +143,19 @@ class divide:
         for slot in self.slots_list:
             slot.W_c=self.W_c[index:index+slot.slot_size]
             index=index+slot.slot_size
-            # slot.show_Wc()
+            slot.show_Wc()
 
     def high_pass1(self):
         # for slot in self.slots_list:
         #     slot.get_Non_fiducialFeature()
         T_Wc=torch.zeros([self.W_c.shape[0],3])
-        b, a = signal.butter(10, 1, btype='highpass', fs=12)
+        b, a = signal.butter(10, 1, btype='highpass', fs=20)
         # r = signal.lfilter(b, a, self.W_c[:, 2].tolist())
         # g = signal.lfilter(b, a, self.W_c[:, 1].tolist())
         # b = signal.lfilter(b, a, self.W_c[:, 0].tolist())
-        r = signal.filtfilt(b, a, self.W_c[:, 2].tolist())
-        g = signal.filtfilt(b, a, self.W_c[:, 1].tolist())
-        b = signal.filtfilt(b, a, self.W_c[:, 0].tolist())
+        r = signal.filtfilt(b, a, self.W_c[:, 2].tolist(),padtype='odd')
+        g = signal.filtfilt(b, a, self.W_c[:, 1].tolist(),padtype='odd')
+        b = signal.filtfilt(b, a, self.W_c[:, 0].tolist(),padtype='odd')
         T_Wc[:, 2] = torch.tensor(r.copy()).cuda()
         T_Wc[:, 1] = torch.tensor(g.copy()).cuda()
         T_Wc[:, 0] = torch.tensor(b.copy()).cuda()
@@ -166,10 +167,10 @@ class divide:
 
     def high_pass2(self):
         T_Wc = torch.zeros([self.W_c.shape[0], 3])
-        b, a = signal.butter(20, 2, btype='highpass', fs=15)
-        r = signal.filtfilt(b, a, self.W_c[:, 2].tolist())
-        g = signal.filtfilt(b, a, self.W_c[:, 1].tolist())
-        b = signal.filtfilt(b, a, self.W_c[:, 0].tolist())
+        b, a = signal.butter(10, 2, btype='highpass', fs=20)
+        r = signal.filtfilt(b, a, self.W_c[:, 2].tolist(),padtype='odd')
+        g = signal.filtfilt(b, a, self.W_c[:, 1].tolist(),padtype='odd')
+        b = signal.filtfilt(b, a, self.W_c[:, 0].tolist(),padtype='odd')
         T_Wc[:, 2] = torch.tensor(r.copy()).cuda()
         T_Wc[:, 1] = torch.tensor(g.copy()).cuda()
         T_Wc[:, 0] = torch.tensor(b.copy()).cuda()
