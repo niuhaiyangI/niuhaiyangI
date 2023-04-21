@@ -7,7 +7,7 @@ from scipy import signal
 from scipy.fftpack import fft,ifft
 class SLOT:
     def __init__(self, slot_size, s_list, red_average,fps):
-        self.gama=5
+        self.gama=0
         self.fps=fps
         self.slot_size=slot_size
         self.W_c1=torch.zeros([self.slot_size,3])
@@ -31,47 +31,6 @@ class SLOT:
         self.rolling_window=4
 
 
-
-    def _bandpass(self,low,high,data):
-        data = np.array(data)
-        signal_fft = fft(data)
-        signal_fft_abs = abs(fft(data))
-        signal_fft_abs_norm = abs(fft(data)) / ((len(data) / 2))  # 归一化处理
-        signal_fft_abs_norm_half = signal_fft_abs_norm[range(int(len(data) / 2))]  # 由于对称性，只取一半区间
-        signal_fft_abs_size = np.arange(len(data))  # 频率
-        # IIR_filter = filter()
-        # b, a = signal.iirfilter(3, 2 * (freq / self.fps), btype='high')
-        b, a = signal.butter(3, [2 * (low / self.fps),2 * (high / self.fps)], btype='bandpass')
-        IIR_Output = signal.filtfilt(b, a, signal_fft_abs)
-        IIR_Output_Size = len(IIR_Output)
-        IIR_Output = np.array(IIR_Output)
-        IIR_Output_fft = fft(IIR_Output)  # 快速傅里叶变换
-        IIR_Output_fft_abs = abs(fft(IIR_Output))  # 取模
-        IIR_Output_fft_abs_norm = abs(fft(IIR_Output)) / ((len(IIR_Output) / 2))  # 归一化处理
-        IIR_Output_fft_abs_half = IIR_Output_fft_abs_norm[range(int(len(IIR_Output) / 2))]  # 由于对称性，只取一半区间
-        IIR_Output_fft_abs_size = np.arange(len(IIR_Output_fft_abs_norm))  # 频率
-        return IIR_Output_fft_abs
-
-    def _highpass(self,freq,data):
-        data=np.array(data)
-        signal_fft=fft(data)
-        signal_fft_abs=abs(fft(data))
-        signal_fft_abs_norm = abs(fft(data)) / ((len(data) / 2))  # 归一化处理
-        signal_fft_abs_norm_half = signal_fft_abs_norm[range(int(len(data) / 2))]  # 由于对称性，只取一半区间
-        signal_fft_abs_size = np.arange(len(data))  # 频率
-        # IIR_filter = filter()
-        # b, a = signal.iirfilter(3, 2 * (freq / self.fps), btype='high')
-        b, a = signal.butter(3, 2 * (freq / self.fps), btype='highpass')
-        IIR_Output = signal.filtfilt(b,a,signal_fft_abs)
-        IIR_Output_Size = len(IIR_Output)
-        IIR_Output = np.array(IIR_Output)
-        IIR_Output_fft = fft(IIR_Output)  # 快速傅里叶变换
-        IIR_Output_fft_abs = abs(fft(IIR_Output))  # 取模
-        IIR_Output_fft_abs_norm = abs(fft(IIR_Output)) / ((len(IIR_Output) / 2))  # 归一化处理
-        IIR_Output_fft_abs_half = IIR_Output_fft_abs_norm[range(int(len(IIR_Output) / 2))]  # 由于对称性，只取一半区间
-        IIR_Output_fft_abs_size = np.arange(len(IIR_Output_fft_abs_norm))  # 频率
-        return IIR_Output_fft_abs
-
     def _cal_score(self):
         score=0
         for i in range(self.bin_size):
@@ -85,45 +44,6 @@ class SLOT:
             temp=torch.tensor(img*self.M).cuda().sum(dim=(0,1))/torch.tensor(self.M).cuda().sum(dim=(0,1))
             W_list.append(temp.tolist())
         W_list=torch.tensor(W_list)
-        red_channel=W_list[:,2]
-        green_channel=W_list[:,1]
-        blue_channel = W_list[:,0]
-        # red_channel = (red_channel - red_channel.min()) / (red_channel.max() - red_channel.min())
-        # green_channel = (green_channel - green_channel.min()) / (green_channel.max() - green_channel.min())
-        # blue_channel = (blue_channel - blue_channel.min()) / (blue_channel.max() - blue_channel.min())
-        # red_channel = (red_channel - red_channel.min())
-        # green_channel = (green_channel - green_channel.min())
-        # blue_channel = (blue_channel - blue_channel.min())
-        b, a = signal.butter(20, [0.3,10.0], btype='bandpass',fs=30)
-        zi=signal.lfilter_zi(b,a)
-        # red_channel=signal.filtfilt(b,a,red_channel)
-        # green_channel = signal.filtfilt(b, a, green_channel)
-        # blue_channel = signal.filtfilt(b,a,blue_channel)
-        # red_channel=self._bandpass(0.3,10.0,red_channel)
-        # green_channel = self._bandpass(0.3, 10.0, green_channel)
-        # blue_channel = self._bandpass(0.3, 10.0, blue_channel)
-        # red_channel=signal.filtfilt(b,a,red_channel.tolist(),axis=0,method='gust')
-        # green_channel = signal.filtfilt(b, a, green_channel.tolist(),axis=0,method='gust')
-        # blue_channel = signal.filtfilt(b,a,blue_channel.tolist(),axis=0,method='gust')
-        # red_channel,_=signal.lfilter(b,a,red_channel,zi=zi*red_channel.tolist()[0])
-        # green_channel,_ = signal.lfilter(b, a, green_channel,zi=zi*green_channel.tolist()[0])
-        # blue_channel,_ = signal.lfilter(b,a,blue_channel,zi=zi*blue_channel.tolist()[0])
-        # red_channel= signal.lfilter(b, a, red_channel)
-        # green_channel = signal.lfilter(b, a, green_channel)
-        # blue_channel = signal.lfilter(b, a, blue_channel)
-        # x=range(self.slot_size)
-        # plt.close()
-        # plt.plot(x, red_channel, color='pink', label='red_average')
-        # # plt.plot(x, W_list[:,2], color='r', label='red_average')
-        # plt.show()
-        # sos= signal.butter(10,0.3, btype='highpass',fs=self.slot_size,output='sos')
-        # zi=signal.sosfilt_zi(sos)
-        # red_channel,_=signal.sosfilt(sos,red_channel,zi=zi)
-        # green_channel,_ = signal.sosfilt(sos, green_channel,zi=zi)
-        # blue_channel,_ = signal.sosfilt(sos,blue_channel,zi=zi)
-        # W_list[:,2]=torch.tensor(red_channel.copy())
-        # W_list[:,1]=torch.tensor(green_channel.copy())
-        # W_list[:,0]=torch.tensor(blue_channel.copy())
         W_list.cuda()
         return W_list
 
@@ -140,47 +60,53 @@ class SLOT:
         return (x)/(self.slot_size-1)
 
     def get_Systolic_DiastolicFeature(self):
-        print(self.Hz)
-        x=(torch.tensor(range(self.slot_size)))/(self.slot_size-1)
-        red_channel=self.W_c[:,2]
-        green_channel=self.W_c[:,1]
-        blue_channel = self.W_c[:,0]
-        red_channel=(red_channel-red_channel.min())/(red_channel.max()-red_channel.min())
+        x = (torch.tensor(range(self.slot_size))) / (self.slot_size - 1)
+        red_channel = self.W_c1[:, 2]
+        green_channel = self.W_c1[:, 1]
+        blue_channel = self.W_c1[:, 0]
+        red_channel = (red_channel - red_channel.min()) / (red_channel.max() - red_channel.min())
         green_channel = (green_channel - green_channel.min()) / (green_channel.max() - green_channel.min())
         blue_channel = (blue_channel - blue_channel.min()) / (blue_channel.max() - blue_channel.min())
-        plt.close()
-        # plt.plot(x, self.W_c[:,2],color='pink')
-        plt.plot(x, red_channel, color='r', label='red_average')
-        plt.plot(x, green_channel, color='g', label='green_average')
-        plt.plot(x, blue_channel, color='b', label='blue_average')
-        plt.show()
+        sum = (red_channel + green_channel + blue_channel) / 3
+        check=sum
+        Series = pd.Series(check.tolist())
+        rol = Series.rolling(window=3).mean()
+        peak, _ = signal.find_peaks(check.tolist())
+        peak2, _ = signal.find_peaks((-check).tolist())
 
 
-    def get_Non_fiducialFeature(self):
-        print(self.heart_time)
+
+    def get_Non_fiducialFeature1(self):
         x = (torch.tensor(range(self.slot_size))) / (self.slot_size - 1)
-        red_channel = self.W_c[:, 2]
-        green_channel = self.W_c[:, 1]
-        blue_channel = self.W_c[:, 0]
-        ones=torch.ones(self.slot_size)
-        # red_channel = (red_channel - red_channel.min()) / (red_channel.max() - red_channel.min())
-        # green_channel = (green_channel - green_channel.min()) / (green_channel.max() - green_channel.min())
-        # blue_channel = (blue_channel - blue_channel.min()) / (blue_channel.max() - blue_channel.min())
-        # b1,a1=signal.butter(3,2*(1/self.fps),btype='high')
-        b1, a1 = signal.butter(7, 1, btype='highpass', fs=self.slot_size)
-        b2, a2 = signal.butter(7, 2, btype='highpass',fs=self.slot_size)
-        sf_r1=signal.lfilter(b1,a1,red_channel.tolist())
-        sf_r2 = signal.lfilter(b2, a2, red_channel.tolist())
-        # sf_r1=signal.filtfilt(b1,a1,red_channel.tolist(),method='gust')
-        # sf_r2 = signal.filtfilt(b2, a2, red_channel.tolist(), method='gust')
-        sf_r1_rolling=pd.Series(sf_r1).rolling(window=self.rolling_window).mean()
-        sf_r2_rolling = pd.Series(sf_r2).rolling(window=self.rolling_window).mean()
-        peak_r1,_=signal.find_peaks(-sf_r1_rolling)
-        peak_r2, _ = signal.find_peaks(-sf_r2_rolling)
-        plt.close()
-        plt.plot(x, sf_r1, color='r', label='green_average')
-        plt.plot(x, sf_r2, color='b', label='green_average')
-        plt.show()
+        red_channel = self.W_c1[:, 2]
+        green_channel = self.W_c1[:, 1]
+        blue_channel = self.W_c1[:, 0]
+        red_channel = (red_channel - red_channel.min()) / (red_channel.max() - red_channel.min())
+        green_channel = (green_channel - green_channel.min()) / (green_channel.max() - green_channel.min())
+        blue_channel = (blue_channel - blue_channel.min()) / (blue_channel.max() - blue_channel.min())
+        sum = (red_channel + green_channel + blue_channel) / 3
+        check=sum
+        Series = pd.Series(check.tolist())
+        rol = Series.rolling(window=3).mean()
+        peak, _ = signal.find_peaks(check.tolist())
+        peak2, _ = signal.find_peaks((-check).tolist())
+
+
+
+    def get_Non_fiducialFeature2(self):
+        x = (torch.tensor(range(self.slot_size))) / (self.slot_size - 1)
+        red_channel = self.W_c1[:, 2]
+        green_channel = self.W_c1[:, 1]
+        blue_channel = self.W_c1[:, 0]
+        red_channel = (red_channel - red_channel.min()) / (red_channel.max() - red_channel.min())
+        green_channel = (green_channel - green_channel.min()) / (green_channel.max() - green_channel.min())
+        blue_channel = (blue_channel - blue_channel.min()) / (blue_channel.max() - blue_channel.min())
+        sum = (red_channel + green_channel + blue_channel) / 3
+        check=sum
+        Series = pd.Series(check.tolist())
+        rol = Series.rolling(window=3).mean()
+        peak, _ = signal.find_peaks(check.tolist())
+        peak2, _ = signal.find_peaks((-check).tolist())
 
     def show_Wc(self):
         print('show start')
@@ -191,12 +117,13 @@ class SLOT:
         red_channel = (red_channel - red_channel.min()) / (red_channel.max() - red_channel.min())
         green_channel = (green_channel - green_channel.min()) / (green_channel.max() - green_channel.min())
         blue_channel = (blue_channel - blue_channel.min()) / (blue_channel.max() - blue_channel.min())
-        sum=(red_channel+green_channel+blue_channel)/3
+        # sum=(red_channel+green_channel+blue_channel)/3
+        sum=(red_channel+green_channel)/2
         plt.close()
         # plt.plot(x, self.W_c[:,2],color='pink')
-        # plt.plot(x, red_channel.tolist(), color='r', label='red_average')
-        # plt.plot(x, green_channel.tolist(), color='g', label='green_average')
-        # plt.plot(x, blue_channel.tolist(), color='b', label='blue_average')
+        plt.plot(x, red_channel.tolist(), color='r', label='red_average')
+        plt.plot(x, green_channel.tolist(), color='g', label='green_average')
+        plt.plot(x, blue_channel.tolist(), color='b', label='blue_average')
         check=sum
         # check=red_channel
         plt.plot(x, check.tolist(), color='black', label='blue_average')
@@ -221,9 +148,9 @@ class SLOT:
         sum=(red_channel+green_channel+blue_channel)/3
         plt.close()
         # plt.plot(x, self.W_c[:,2],color='pink')
-        # plt.plot(x, red_channel.tolist(), color='r', label='red_average')
-        # plt.plot(x, green_channel.tolist(), color='g', label='green_average')
-        # plt.plot(x, blue_channel.tolist(), color='b', label='blue_average')
+        plt.plot(x, red_channel.tolist(), color='r', label='red_average')
+        plt.plot(x, green_channel.tolist(), color='g', label='green_average')
+        plt.plot(x, blue_channel.tolist(), color='b', label='blue_average')
         check=sum
         # check=red_channel
         plt.plot(x, check.tolist(), color='black', label='blue_average')
@@ -248,9 +175,9 @@ class SLOT:
         sum=(red_channel+green_channel+blue_channel)/3
         plt.close()
         # plt.plot(x, self.W_c[:,2],color='pink')
-        # plt.plot(x, red_channel.tolist(), color='r', label='red_average')
-        # plt.plot(x, green_channel.tolist(), color='g', label='green_average')
-        # plt.plot(x, blue_channel.tolist(), color='b', label='blue_average')
+        plt.plot(x, red_channel.tolist(), color='r', label='red_average')
+        plt.plot(x, green_channel.tolist(), color='g', label='green_average')
+        plt.plot(x, blue_channel.tolist(), color='b', label='blue_average')
         check=sum
         # check=red_channel
         plt.plot(x, check.tolist(), color='black', label='blue_average')
@@ -264,5 +191,57 @@ class SLOT:
         plt.show()
 
 
+    def S_feature_get(self,input):
+        x = (torch.tensor(range(self.slot_size))) / (self.slot_size - 1)
+        band1=[0.1,0.3]
+        default1=0.2
+        band2=[0.2,0.45]
+        default2 = 0.35
+        band3=[0.6,1.0]
+        default3 = 0.8
+        check = input
+        Series = pd.Series(check.tolist())
+        rol = Series.rolling(window=3).mean()
+        peak, _ = signal.find_peaks(check.tolist())
+        peak2, _ = signal.find_peaks((-check).tolist())
+        DP_x=self._get_default(default1)
+        DP_t=list([x for x in peak if band1[0] <= x/(self.slot_size - 1) <= band1[1]])
+        if len(DP_t):
+            DP_x=DP_t[0]
 
 
+        DN_x = self._get_default(default2)
+        DN_t = list([x for x in peak if band2[0] <= x/(self.slot_size - 1) <= band2[1]])
+        if len(DN_t):
+            DN_x = DN_t[0]
+
+        SP_x = self._get_default(default3)
+        SP_t = list([x for x in peak if band3[0] <= x / (self.slot_size - 1) <= band3[1]])
+        if len(SP_t):
+            SP_x = SP_t[0]
+
+        h1=input[DP_x]
+        h2=input[DN_x]
+        t1=DP_x/ (self.slot_size - 1)
+        t2=(DN_x/ (self.slot_size - 1))-(DP_x/ (self.slot_size - 1))
+        t3=(SP_x/ (self.slot_size - 1))-(DN_x/ (self.slot_size - 1))
+        t4=1.0-(SP_x/ (self.slot_size - 1))
+
+        s1=abs(h1/t1)
+        s2 = abs(h2 / t2)
+        s3 = abs(1.0 / t1)
+        s4 = abs(input[self.slot_size-1] / t1)
+
+        return h1,h2,t1,t2,t3,t4,s1,s2,s3,s4
+
+
+    def _get_default(self,default):
+        x = (torch.tensor(range(self.slot_size))) / (self.slot_size - 1)
+        temp=0
+        min=self.fps*100
+        for i in range(len(x)):
+            dis=abs(x[i]-default)
+            if dis<min:
+                min=dis
+                temp=i
+        return temp

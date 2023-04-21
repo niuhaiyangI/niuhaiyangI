@@ -54,12 +54,12 @@ class divide:
             img_tensor = torch.asarray(np.array(self.img_list[i]), dtype=torch.int).cuda()
             self.red_average[i] = img_tensor[:,:,2].sum() / (img_tensor.shape[0] * img_tensor.shape[1])
         # b, a = signal.butter(10, [2 * (0.3 / 30), 2 * (10.0 / 30)], btype='bandpass')
-        # b, a = signal.butter(10, [0.3,10.0], btype='bandpass',fs=30)
-        # temp=signal.filtfilt(b,a,self.red_average)
-        # plt.close()
-        # plt.plot(range(self.frames_num),temp,color='b')
-        # # plt.plot(range(self.frames_num),self.red_average,color='r')
-        # plt.show()
+        b, a = signal.butter(10, [0.3,10.0], btype='bandpass',fs=self.fps)
+        temp=signal.filtfilt(b,a,self.red_average)
+        plt.close()
+        plt.plot(range(self.frames_num),temp,color='b')
+        # plt.plot(range(self.frames_num),self.red_average,color='r')
+        plt.show()
             # print(self.red_average[i])
 
     def show_red_channel(self):
@@ -77,6 +77,11 @@ class divide:
         # plt.plot(range(self.frames_num-self.distance), rol[self.distance:self.frames_num], color='b')
         # plt.plot( range(self.frames_num-self.window_min), rol[self.window_min-1:-1], color='b')
         plt.plot(x,self.red_average,color='g')
+        b, a = signal.butter(10, [0.3,10.0], btype='bandpass',fs=self.fps)
+        temp=signal.filtfilt(b,a,self.red_average)
+        plt.close()
+        plt.plot(x,temp,color='b')
+        plt.plot(s_list, temp[s_list], "x", color='r', label='red_average')
         # plt.plot(self.peak,self.red_average[self.peak],"x",color="black")
         plt.show()
 
@@ -131,7 +136,7 @@ class divide:
         return slots, len(slots) , score_sum / len(slots),pump_frames,s_list,W_c
 
     def band_pass(self):
-        b, a = signal.butter(10, [0.3, 10], btype='bandpass',fs=21)
+        b, a = signal.butter(10, [0.3, 10], btype='bandpass',fs=self.fps)
         # b, a = signal.butter(10, 0.3*2, btype='highpass',fs=30)
         r = signal.filtfilt(b, a, self.W_c[:,2].tolist(),padtype='odd')
         g = signal.filtfilt(b, a, self.W_c[:, 1].tolist(),padtype='odd')
@@ -149,7 +154,7 @@ class divide:
         # for slot in self.slots_list:
         #     slot.get_Non_fiducialFeature()
         T_Wc=torch.zeros([self.W_c.shape[0],3])
-        b, a = signal.butter(10, 1, btype='highpass', fs=20)
+        b, a = signal.butter(10, 1, btype='highpass', fs=self.fps)
         # r = signal.lfilter(b, a, self.W_c[:, 2].tolist())
         # g = signal.lfilter(b, a, self.W_c[:, 1].tolist())
         # b = signal.lfilter(b, a, self.W_c[:, 0].tolist())
@@ -167,7 +172,7 @@ class divide:
 
     def high_pass2(self):
         T_Wc = torch.zeros([self.W_c.shape[0], 3])
-        b, a = signal.butter(10, 2, btype='highpass', fs=20)
+        b, a = signal.butter(10, 2, btype='highpass', fs=self.fps)
         r = signal.filtfilt(b, a, self.W_c[:, 2].tolist(),padtype='odd')
         g = signal.filtfilt(b, a, self.W_c[:, 1].tolist(),padtype='odd')
         b = signal.filtfilt(b, a, self.W_c[:, 0].tolist(),padtype='odd')
