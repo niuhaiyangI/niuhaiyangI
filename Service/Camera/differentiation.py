@@ -1,3 +1,5 @@
+import math
+
 import pandas as pd
 import torch
 from torchvision import transforms
@@ -27,8 +29,8 @@ class SLOT:
         self.M=(self.diff>self.gama)
         self.score=self._cal_score()
         self.W_c=self._cal_W()
-        self.DN_index=0
         self.rolling_window=4
+
 
 
     def _cal_score(self):
@@ -67,12 +69,13 @@ class SLOT:
         red_channel = (red_channel - red_channel.min()) / (red_channel.max() - red_channel.min())
         green_channel = (green_channel - green_channel.min()) / (green_channel.max() - green_channel.min())
         blue_channel = (blue_channel - blue_channel.min()) / (blue_channel.max() - blue_channel.min())
-        sum = (red_channel + green_channel + blue_channel) / 3
-        check=sum
-        Series = pd.Series(check.tolist())
-        rol = Series.rolling(window=3).mean()
-        peak, _ = signal.find_peaks(check.tolist())
-        peak2, _ = signal.find_peaks((-check).tolist())
+        red_faeture=self.S_feature_get(red_channel)
+        green_faeture = self.S_feature_get(green_channel)
+        blue_faeture = self.S_feature_get(blue_channel)
+        return red_faeture, green_faeture, blue_faeture
+
+
+
 
 
 
@@ -84,12 +87,16 @@ class SLOT:
         red_channel = (red_channel - red_channel.min()) / (red_channel.max() - red_channel.min())
         green_channel = (green_channel - green_channel.min()) / (green_channel.max() - green_channel.min())
         blue_channel = (blue_channel - blue_channel.min()) / (blue_channel.max() - blue_channel.min())
-        sum = (red_channel + green_channel + blue_channel) / 3
-        check=sum
-        Series = pd.Series(check.tolist())
-        rol = Series.rolling(window=3).mean()
-        peak, _ = signal.find_peaks(check.tolist())
-        peak2, _ = signal.find_peaks((-check).tolist())
+        red_faeture=self.N_feature_get(red_channel)
+        green_faeture = self.N_feature_get(green_channel)
+        blue_faeture = self.N_feature_get(blue_channel)
+        return red_faeture,green_faeture,blue_faeture
+        # sum = (red_channel + green_channel + blue_channel) / 3
+        # check=sum
+        # Series = pd.Series(check.tolist())
+        # rol = Series.rolling(window=3).mean()
+        # peak, _ = signal.find_peaks(check.tolist())
+        # peak2, _ = signal.find_peaks((-check).tolist())
 
 
 
@@ -101,12 +108,10 @@ class SLOT:
         red_channel = (red_channel - red_channel.min()) / (red_channel.max() - red_channel.min())
         green_channel = (green_channel - green_channel.min()) / (green_channel.max() - green_channel.min())
         blue_channel = (blue_channel - blue_channel.min()) / (blue_channel.max() - blue_channel.min())
-        sum = (red_channel + green_channel + blue_channel) / 3
-        check=sum
-        Series = pd.Series(check.tolist())
-        rol = Series.rolling(window=3).mean()
-        peak, _ = signal.find_peaks(check.tolist())
-        peak2, _ = signal.find_peaks((-check).tolist())
+        red_faeture=self.N_feature_get(red_channel)
+        green_faeture = self.N_feature_get(green_channel)
+        blue_faeture = self.N_feature_get(blue_channel)
+        return red_faeture, green_faeture, blue_faeture
 
     def show_Wc(self):
         print('show start')
@@ -195,44 +200,132 @@ class SLOT:
         x = (torch.tensor(range(self.slot_size))) / (self.slot_size - 1)
         band1=[0.1,0.3]
         default1=0.2
-        band2=[0.2,0.45]
+        band2=[0.21,0.45]
         default2 = 0.35
         band3=[0.6,1.0]
         default3 = 0.8
-        check = input
-        Series = pd.Series(check.tolist())
+        check = input.tolist()
+        check_neg=(-input).tolist()
+        Series = pd.Series(check)
         rol = Series.rolling(window=3).mean()
-        peak, _ = signal.find_peaks(check.tolist())
-        peak2, _ = signal.find_peaks((-check).tolist())
+        peak, _ = signal.find_peaks(check)
+        peak2, _ = signal.find_peaks(check_neg)
         DP_x=self._get_default(default1)
         DP_t=list([x for x in peak if band1[0] <= x/(self.slot_size - 1) <= band1[1]])
         if len(DP_t):
             DP_x=DP_t[0]
+            band2[0]=(DP_x+1)/(self.slot_size - 1)
+
 
 
         DN_x = self._get_default(default2)
-        DN_t = list([x for x in peak if band2[0] <= x/(self.slot_size - 1) <= band2[1]])
+        DN_t = list([x for x in peak2 if band2[0] <= x/(self.slot_size - 1) <= band2[1]])
         if len(DN_t):
             DN_x = DN_t[0]
+
 
         SP_x = self._get_default(default3)
         SP_t = list([x for x in peak if band3[0] <= x / (self.slot_size - 1) <= band3[1]])
         if len(SP_t):
             SP_x = SP_t[0]
 
-        h1=input[DP_x]
-        h2=input[DN_x]
+        h1=check[DP_x]
+        h2=check[DN_x]
         t1=DP_x/ (self.slot_size - 1)
         t2=(DN_x/ (self.slot_size - 1))-(DP_x/ (self.slot_size - 1))
         t3=(SP_x/ (self.slot_size - 1))-(DN_x/ (self.slot_size - 1))
         t4=1.0-(SP_x/ (self.slot_size - 1))
+        if t1<=0 or math.isinf(t1) or math.isnan(t1):
+            print("t1")
+            print(t1)
+        if t2<=0 or math.isinf(t2) or math.isnan(t2):
+            print(DN_x)
+            print(DP_x)
+            print(band2[0])
+            print((DP_x+1)/(self.slot_size - 1))
+            print(DP_x/(self.slot_size - 1))
+            print(self.slot_size)
+            print("t2")
+            print(t2)
+        if t3<=0 or math.isinf(t3) or math.isnan(t3):
+            print("t3")
+            print(t3)
+        if t4<=0 or math.isinf(t4) or math.isnan(t4):
+            print("t4")
+            print(t4)
 
         s1=abs(h1/t1)
         s2 = abs(h2 / t2)
-        s3 = abs(1.0 / t1)
-        s4 = abs(input[self.slot_size-1] / t1)
+        s3 = abs(1.0 / t3)
+        s4 = abs(check[self.slot_size-1] / t4)
 
         return h1,h2,t1,t2,t3,t4,s1,s2,s3,s4
+
+
+    def N_feature_get(self,input):
+        band1 = [0.1, 0.3]
+        default1 = 0.2
+        band2 = [0.21, 0.45]
+        default2 = 0.3
+        band3 = [0.31, 0.6]
+        default3 = 0.5
+        band4 = [0.5, 0.8]
+        default4 = 0.7
+        band5 = [0.7, 1.0]
+        default5 = 0.9
+        check = input.tolist()
+        check_neg=(-input).tolist()
+        Series = pd.Series(check)
+        rol = Series.rolling(window=3).mean()
+        peak, _ = signal.find_peaks(check)
+        peak2, _ = signal.find_peaks(check_neg)
+
+        y1_x = self._get_default(default1)
+        y1_t = list([x for x in peak if band1[0] <= x / (self.slot_size - 1) <= band1[1]])
+        if len(y1_t):
+            y1_x = y1_t[0]
+            band2[0]=(y1_x+1)/(self.slot_size - 1)
+
+        y2_x = self._get_default(default2)
+        y2_t = list([x for x in peak2 if band2[0] <= x / (self.slot_size - 1) <= band2[1]])
+        if len(y2_t):
+            y2_x = y2_t[0]
+
+        y3_x = self._get_default(default3)
+        y3_t = list([x for x in peak if band3[0] <= x / (self.slot_size - 1) <= band3[1]])
+        if len(y3_t):
+            y3_x = y3_t[0]
+
+        y4_x = self._get_default(default4)
+        y4_t = list([x for x in peak2 if band4[0] <= x / (self.slot_size - 1) <= band4[1]])
+        if len(y4_t):
+            y4_x = y4_t[0]
+
+        y5_x = self._get_default(default5)
+        y5_t = list([x for x in peak if band5[0] <= x / (self.slot_size - 1) <= band5[1]])
+        if len(y5_t):
+            y5_x = y5_t[0]
+
+        x1=(y2_x/ (self.slot_size - 1))-(y1_x/ (self.slot_size - 1))
+        x3=(y4_x/ (self.slot_size - 1))-(y3_x/ (self.slot_size - 1))
+        x5=x3=1.0-(y5_x/ (self.slot_size - 1))
+        if x1<0 :
+            print("x1")
+            print(x1)
+        if x3<0:
+            print("x3")
+            print(x3)
+        if x5<0:
+            print("x5")
+            print(x5)
+
+        d12=abs(check[y1_x]-check[y2_x])
+        d34 = abs(check[y3_x] - check[y4_x])
+        d5 = check[y5_x]
+        return x1,x3,x5,d12,d34,d5
+
+
+
 
 
     def _get_default(self,default):
@@ -245,3 +338,41 @@ class SLOT:
                 min=dis
                 temp=i
         return temp
+
+    def Get_Features(self):
+        #获取66个features
+        # print("features")
+        features=[]
+        feature_list=self.get_Systolic_DiastolicFeature()
+        # print("get_Systolic_DiastolicFeature")
+        for feature in feature_list:
+            for f in feature:
+                if f<0 or math.isinf(f) or math.isnan(f):
+                    try:
+                        raise ValueError
+                    except:
+                        raise
+                features.append(f)
+
+        # print("get_Non_fiducialFeature1")
+        feature_list = self.get_Non_fiducialFeature1()
+        for feature in feature_list:
+            for f in feature:
+                if f<0 or math.isinf(f) or math.isnan(f):
+                    try:
+                        raise ValueError
+                    except:
+                        raise
+                features.append(f)
+
+        # print("get_Non_fiducialFeature2")
+        feature_list = self.get_Non_fiducialFeature2()
+        for feature in feature_list:
+            for f in feature:
+                if f<0 or math.isinf(f) or math.isnan(f):
+                    try:
+                        raise ValueError
+                    except:
+                        raise
+                features.append(f)
+        return features

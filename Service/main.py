@@ -10,17 +10,19 @@ from Camera.divide import divide
 
 
 
-video_path="D:\\毕业设计\\niuhaiyangI\\实验素材\\12.mp4"
+video_path="D:\\毕业设计\\niuhaiyangI\\实验素材\\8.mp4"
 
 
-
+match_path="D:\\毕业设计\\niuhaiyangI\\实验素材\\12.mp4"
 
 
 
 
 # Press the green button in the gutter to run the script.
 if __name__ == '__main__':
-    camera = cv2.VideoCapture(video_path)
+
+    # camera = cv2.VideoCapture(video_path)
+    camera = cv2.VideoCapture(match_path)
     if camera.isOpened():
         print("开始")
     else:
@@ -28,6 +30,8 @@ if __name__ == '__main__':
         if camera.isOpened():
             print("成功")
     div=divide(camera)
+    # div.profile_feature("Niu Haiyang")
+    div.match()
     div.show_red_channel()
     # video=video(camera)
     # video.run()
