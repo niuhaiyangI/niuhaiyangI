@@ -9,7 +9,7 @@ from scipy import signal
 from scipy.fftpack import fft,ifft
 class SLOT:
     def __init__(self, slot_size, s_list, red_average,fps):
-        self.gama=0
+        self.gama=5
         self.fps=fps
         self.slot_size=slot_size
         self.W_c1=torch.zeros([self.slot_size,3])
@@ -26,7 +26,11 @@ class SLOT:
         self.bin_size = 3
         self.bin = [x for x in range(256) if x % int(256 / self.bin_size) == 0]
         self.diff=self.max_frame-self.min_frame
-        self.M=(self.diff>self.gama)
+        M_temp=np.zeros(self.diff.shape)
+        M_temp[:,:,2]=(self.diff[:,:,2]>self.gama)
+        M_temp[:, :, 1] = (self.diff[:, :, 2] > self.gama)
+        M_temp[:, :, 0] = (self.diff[:, :, 2] > self.gama)
+        self.M=M_temp
         self.score=self._cal_score()
         self.W_c=self._cal_W()
         self.rolling_window=4
@@ -37,7 +41,6 @@ class SLOT:
         score=0
         for i in range(self.bin_size):
             score=score+i*i*(((self.diff[:,:,2]>=self.bin[i])&(self.diff[:,:,2]<self.bin[i+1])).sum()/(self.diff.shape[0]*self.diff.shape[1]))
-        # print(score)
         return score
 
     def _cal_W(self):
@@ -63,9 +66,9 @@ class SLOT:
 
     def get_Systolic_DiastolicFeature(self):
         x = (torch.tensor(range(self.slot_size))) / (self.slot_size - 1)
-        red_channel = self.W_c1[:, 2]
-        green_channel = self.W_c1[:, 1]
-        blue_channel = self.W_c1[:, 0]
+        red_channel = self.W_c[:, 2]
+        green_channel = self.W_c[:, 1]
+        blue_channel = self.W_c[:, 0]
         red_channel = (red_channel - red_channel.min()) / (red_channel.max() - red_channel.min())
         green_channel = (green_channel - green_channel.min()) / (green_channel.max() - green_channel.min())
         blue_channel = (blue_channel - blue_channel.min()) / (blue_channel.max() - blue_channel.min())
@@ -102,9 +105,9 @@ class SLOT:
 
     def get_Non_fiducialFeature2(self):
         x = (torch.tensor(range(self.slot_size))) / (self.slot_size - 1)
-        red_channel = self.W_c1[:, 2]
-        green_channel = self.W_c1[:, 1]
-        blue_channel = self.W_c1[:, 0]
+        red_channel = self.W_c2[:, 2]
+        green_channel = self.W_c2[:, 1]
+        blue_channel = self.W_c2[:, 0]
         red_channel = (red_channel - red_channel.min()) / (red_channel.max() - red_channel.min())
         green_channel = (green_channel - green_channel.min()) / (green_channel.max() - green_channel.min())
         blue_channel = (blue_channel - blue_channel.min()) / (blue_channel.max() - blue_channel.min())
@@ -214,7 +217,7 @@ class SLOT:
         DP_t=list([x for x in peak if band1[0] <= x/(self.slot_size - 1) <= band1[1]])
         if len(DP_t):
             DP_x=DP_t[0]
-            band2[0]=(DP_x+1)/(self.slot_size - 1)
+        band2[0] = (DP_x + 1) / (self.slot_size - 1)
 
 
 

@@ -7,8 +7,8 @@ out_file=open(outfile,'w+')
 class video:
     def __init__(self,cam):
         self.camera=cam
-        self.threshold=0.65
-        self.percent=0.80
+        self.threshold=0.7
+        self.percent=0.85
         self.bin_div=8
         self.list=[]
 

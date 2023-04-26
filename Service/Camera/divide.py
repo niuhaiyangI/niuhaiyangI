@@ -83,8 +83,7 @@ class divide:
         b, a = signal.butter(10, [0.3,10.0], btype='bandpass',fs=self.fps)
         temp=signal.filtfilt(b,a,self.red_average)
         plt.close()
-        plt.plot(x,temp,color='b')
-        plt.plot(s_list, temp[s_list], "x", color='r', label='red_average')
+        plt.plot(x,self.red_average,color='b')
         # plt.plot(self.peak,self.red_average[self.peak],"x",color="black")
         plt.show()
 
@@ -123,21 +122,18 @@ class divide:
             average = self.red_average[s_list[i]:s_list[i + 1] + 1]
             temp_list = []
             for j in range(s_list[i], s_list[i + 1] + 1):
-                # print(str(j)+" "+str(s_list[i])+" "+str(s_list[i+1])+" ")
+
                 temp_list.append(self.img_list[j])
             slot = SLOT(s_list[i + 1] - s_list[i] + 1, temp_list, average, self.fps)
-            # slot.show()
             if slot.slot_size >= self.window_min and slot.slot_size <= self.window_max:
-            # if slot.Hz > (1/self.heart_pump_max) and slot.Hz <(1/self.heart_pump_min):
                 pump_frames=pump_frames+slot.slot_size
-                # slot.get_Systolic_DiastolicFeature()
-                # slot.get_Non_fiducialFeature()
                 score_sum = score_sum + slot.score
                 slots.append(slot)
                 W_c=W_c+slot.W_c.tolist()
         W_c=torch.tensor(W_c).cuda()
         return slots, len(slots) , score_sum / len(slots),pump_frames,s_list,W_c
 
+    #带通滤波
     def band_pass(self):
         b, a = signal.butter(10, [0.3, 10], btype='bandpass',fs=self.fps)
         # b, a = signal.butter(10, 0.3*2, btype='highpass',fs=30)
@@ -255,6 +251,7 @@ class divide:
         self.band_pass()
         self.high_pass1()
         self.high_pass2()
+        dist=[]
         for slot in self.slots_list:
             s_features = slot.Get_Features()
             feature_list=[]
@@ -271,6 +268,14 @@ class divide:
             s = torch.tensor(s).transpose(0, 1)
             dis=self.dist(f_vector,s)
             print(dis)
+            dist.append(dis)
+        dist=torch.tensor(dist)
+        print("max")
+        print(dist.max())
+        print("average")
+        print(dist.sum()/dist.shape[0])
+        print("min")
+        print(dist.min())
 
 
     def dist(self,f,s):
