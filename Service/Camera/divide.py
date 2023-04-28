@@ -150,13 +150,8 @@ class divide:
             # slot.show_Wc()
 
     def high_pass1(self):
-        # for slot in self.slots_list:
-        #     slot.get_Non_fiducialFeature()
         T_Wc=torch.zeros([self.W_c.shape[0],3])
         b, a = signal.butter(10, 1, btype='highpass', fs=self.fps)
-        # r = signal.lfilter(b, a, self.W_c[:, 2].tolist())
-        # g = signal.lfilter(b, a, self.W_c[:, 1].tolist())
-        # b = signal.lfilter(b, a, self.W_c[:, 0].tolist())
         r = signal.filtfilt(b, a, self.W_c[:, 2].tolist(),padtype='odd')
         g = signal.filtfilt(b, a, self.W_c[:, 1].tolist(),padtype='odd')
         b = signal.filtfilt(b, a, self.W_c[:, 0].tolist(),padtype='odd')
@@ -184,6 +179,63 @@ class divide:
             index = index + slot.slot_size
             # slot.show_Wc2()
 
+    # def profile_feature(self,Username):
+    #     threshold=0.9
+    #     self.band_pass()
+    #     self.high_pass1()
+    #     self.high_pass2()
+    #     feature_list=[]
+    #     cont=1
+    #     for slot in self.slots_list:
+    #         if cont>70:
+    #             break
+    #         s_features=slot.Get_Features()
+    #         feature_list.append(s_features)
+    #         cont=cont+1
+    #
+    #     A=torch.tensor(feature_list)
+    #     A=A.transpose(0,1)
+    #     print(A)
+    #     print(A.shape)
+    #     U,S,Vh=torch.linalg.svd(A)
+    #     print(U)
+    #     print(U.shape)
+    #     T=torch.mm(U,A)
+    #     print("T<0")
+    #     print((T<0).sum())
+    #     print(T.shape)
+    #     print((T[0:1].sum(dim=0)/T.sum(dim=0)).max())
+    #     T_norm=T.norm(p=2,dim=1,keepdim=False)
+    #     print(T_norm)
+    #     print(T_norm.shape)
+    #     a,index=torch.sort(T_norm,descending=True)
+    #     print(a)
+    #     print(index)
+    #     sum=0.0
+    #     k=1
+    #     for i in index:
+    #         sum=sum+(T_norm[i]/T_norm.sum())
+    #         if sum>=threshold:
+    #             print(sum)
+    #             print(k)
+    #             break
+    #         k=k+1
+    #     id,_=torch.sort(index[:k])
+    #     print(id)
+    #     print(id.shape)
+    #     T_list=T.tolist()
+    #     f_vector=[]
+    #     for i in id:
+    #         f_vector.append(T_list[i])
+    #     f_vector=torch.tensor(f_vector).transpose(0,1)
+    #     print(f_vector.shape)
+    #     torch.save(U,os.path.join(self.path,'U.pt'))
+    #     torch.save(f_vector,os.path.join(self.path,'f_vector.pt'))
+    #     torch.save(id,os.path.join(self.path,'id.pt'))
+    #     profile_dic={'Username':Username,'k':k}
+    #     np.save(os.path.join(self.path,'profile_dic.npy'),profile_dic,allow_pickle=True)
+
+
     def profile_feature(self,Username):
         threshold=0.9
         self.band_pass()
@@ -198,34 +250,39 @@ class divide:
             feature_list.append(s_features)
             cont=cont+1
 
-        A=torch.tensor(feature_list)
+        A=torch.tensor(feature_list).cuda()
         A=A.transpose(0,1)
         print(A)
         print(A.shape)
         U,S,Vh=torch.linalg.svd(A)
         print(U)
         print(U.shape)
-        T=torch.mm(U,A)
+        T=torch.mm(U,A).cuda()
         print("T<0")
         print((T<0).sum())
         print(T.shape)
         print((T[0:1].sum(dim=0)/T.sum(dim=0)).max())
-        T_norm=T.norm(p=2,dim=1,keepdim=False)
-        print(T_norm)
-        print(T_norm.shape)
-        a,index=torch.sort(T_norm,descending=True)
+
+        T_var=torch.var(T,dim=1,unbiased=False,keepdim=False)
+        print("T_var")
+        print(T_var)
+        print(T_var.shape)
+        a,index=torch.sort(T_var,descending=True)
         print(a)
         print(index)
         sum=0.0
         k=1
+        cont=2
         for i in index:
-            sum=sum+(T_norm[i]/T_norm.sum())
+            cont=cont-1
+            if cont<0:
+                sum=sum+(T_var[i]/T_var.sum())
             if sum>=threshold:
                 print(sum)
                 print(k)
                 break
             k=k+1
-        id,_=torch.sort(index[:k])
+        id,_=torch.sort(index[2:k])
         print(id)
         print(id.shape)
         T_list=T.tolist()
@@ -256,7 +313,7 @@ class divide:
             s_features = slot.Get_Features()
             feature_list=[]
             feature_list.append(s_features)
-            A = torch.tensor(feature_list)
+            A = torch.tensor(feature_list).cuda()
             A = A.transpose(0, 1)
             # print(A)
             # print(A.shape)

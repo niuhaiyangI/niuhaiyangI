@@ -65,7 +65,7 @@ class SLOT:
         return (x)/(self.slot_size-1)
 
     def get_Systolic_DiastolicFeature(self):
-        x = (torch.tensor(range(self.slot_size))) / (self.slot_size - 1)
+        # x = (torch.tensor(range(self.slot_size))) / (self.slot_size - 1)
         red_channel = self.W_c[:, 2]
         green_channel = self.W_c[:, 1]
         blue_channel = self.W_c[:, 0]
@@ -238,24 +238,24 @@ class SLOT:
         t2=(DN_x/ (self.slot_size - 1))-(DP_x/ (self.slot_size - 1))
         t3=(SP_x/ (self.slot_size - 1))-(DN_x/ (self.slot_size - 1))
         t4=1.0-(SP_x/ (self.slot_size - 1))
-        if t1<=0 or math.isinf(t1) or math.isnan(t1):
-            print("t1")
-            print(t1)
-        if t2<=0 or math.isinf(t2) or math.isnan(t2):
-            print(DN_x)
-            print(DP_x)
-            print(band2[0])
-            print((DP_x+1)/(self.slot_size - 1))
-            print(DP_x/(self.slot_size - 1))
-            print(self.slot_size)
-            print("t2")
-            print(t2)
-        if t3<=0 or math.isinf(t3) or math.isnan(t3):
-            print("t3")
-            print(t3)
-        if t4<=0 or math.isinf(t4) or math.isnan(t4):
-            print("t4")
-            print(t4)
+        # if t1<=0 or math.isinf(t1) or math.isnan(t1):
+        #     print("t1")
+        #     print(t1)
+        # if t2<=0 or math.isinf(t2) or math.isnan(t2):
+        #     print(DN_x)
+        #     print(DP_x)
+        #     print(band2[0])
+        #     print((DP_x+1)/(self.slot_size - 1))
+        #     print(DP_x/(self.slot_size - 1))
+        #     print(self.slot_size)
+        #     print("t2")
+        #     print(t2)
+        # if t3<=0 or math.isinf(t3) or math.isnan(t3):
+        #     print("t3")
+        #     print(t3)
+        # if t4<=0 or math.isinf(t4) or math.isnan(t4):
+        #     print("t4")
+        #     print(t4)
 
         s1=abs(h1/t1)
         s2 = abs(h2 / t2)
