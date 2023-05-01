@@ -23,6 +23,7 @@ class divide:
     def __init__(self, cam):
         print("SLOT devide starting....")
         self.path='./Profile/User'
+        self.path_deafult='../Profile/User'
         self.distance=4
         self.rolling_window=2*self.distance+1
         self.heart_pump_seconds = 0.8  ##心脏跳动时间
@@ -277,6 +278,9 @@ class divide:
             cont=cont-1
             if cont<0:
                 sum=sum+(T_var[i]/T_var.sum())
+            else:
+                sum = sum + (T_var[i] / T_var.sum())
+                print(T_var[i]/T_var.sum())
             if sum>=threshold:
                 print(sum)
                 print(k)
@@ -333,10 +337,57 @@ class divide:
         print(dist.sum()/dist.shape[0])
         print("min")
         print(dist.min())
+        var=torch.var(dist,unbiased=False)
+        return dist.tolist(),var ,dist.max(),dist.min(),dist.sum()/dist.shape[0]
+
+    def getDistList(self):
+        try:
+            U = torch.load(os.path.join(self.path, 'U.pt'))
+            f_vector = torch.load(os.path.join(self.path, 'f_vector.pt'))
+            id = torch.load(os.path.join(self.path, 'id.pt'))
+            load_dict = np.load(os.path.join(self.path, 'profile_dic.npy'), allow_pickle=True).item()
+        except:
+            U = torch.load(os.path.join(self.path_deafult, 'U.pt'))
+            f_vector = torch.load(os.path.join(self.path_deafult, 'f_vector.pt'))
+            id = torch.load(os.path.join(self.path_deafult, 'id.pt'))
+            load_dict = np.load(os.path.join(self.path_deafult, 'profile_dic.npy'), allow_pickle=True).item()
+        k=load_dict['k']
+        print(f_vector.shape)
+        self.band_pass()
+        self.high_pass1()
+        self.high_pass2()
+        dist=[]
+        for slot in self.slots_list:
+            s_features = slot.Get_Features()
+            feature_list=[]
+            feature_list.append(s_features)
+            A = torch.tensor(feature_list).cuda()
+            A = A.transpose(0, 1)
+            # print(A)
+            # print(A.shape)
+            T = torch.mm(U, A)
+            T_list = T.tolist()
+            s = []
+            for i in id:
+                s.append(T_list[i])
+            s = torch.tensor(s).transpose(0, 1)
+            dis=self.dist(f_vector,s)
+            print(dis)
+            dist.append(dis)
+        dist=torch.tensor(dist)
+        print("max")
+        print(dist.max())
+        print("average")
+        print(dist.sum()/dist.shape[0])
+        print("min")
+        print(dist.min())
+        var=torch.var(dist,unbiased=False)
+        return dist.tolist(),var ,dist.max(),dist.min(),dist.sum()/dist.shape[0]
 
 
     def dist(self,f,s):
         s_feature=s.repeat(70,1)
         dist=(f-s_feature).norm(p=2,dim=1,keepdim=False).sum()/70
         return dist
+
 
