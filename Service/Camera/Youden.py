@@ -185,10 +185,15 @@ if __name__ == '__main__':
     sensMaxt = 0
     for i in range(1,11):
         spec_t,spec_real=ydj.getAccurate(i)
+        spec_t=round(spec_t,4)
+        spec_real=round(spec_real,4)
         sens_t,sens_real=ydj.getFalserate(i)
+        sens_t = round(sens_t, 4)
+        sens_real = round(sens_real, 4)
         TJ=spec_real+sens_real-1.0
+        TJ=round(TJ,4)
         print('\hline')
-        print('{}&{.4f}&{.4f}&{.4f}&{.4f}&{.4f}&{.4f}&{.4f}&{.4f}&{.4f}\ \ '.format(i,sens_real,spec_real,1-spec_real,1-sens_real,TJ,sens_t,spec_t,1-spec_t,1-sens_t))
+        print('{}&{}&{}&{}&{}&{}&{}&{}&{}&{}\ \ '.format(i,sens_real,spec_real,round(1-spec_real,4),round(1-sens_real,4),TJ,sens_t,spec_t,round(1-spec_t,4),round(1-sens_t,4)))
         if TJ>max:
             max=TJ
             max_i=i
