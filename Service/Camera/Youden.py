@@ -188,7 +188,7 @@ if __name__ == '__main__':
         sens_t,sens_real=ydj.getFalserate(i)
         TJ=spec_real+sens_real-1.0
         print('\hline')
-        print('{}&{.2f%}&{.2f%}&{.2f%}&{.2f%}&{.2f%}&{.2f%}&{.2f%}&{.2f%}&{.2f%}\ \ '.format(i,sens_real,spec_real,1-spec_real,1-sens_real,TJ,sens_t,spec_t,1-spec_t,1-sens_t))
+        print('{}&{.4f}&{.4f}&{.4f}&{.4f}&{.4f}&{.4f}&{.4f}&{.4f}&{.4f}\ \ '.format(i,sens_real,spec_real,1-spec_real,1-sens_real,TJ,sens_t,spec_t,1-spec_t,1-sens_t))
         if TJ>max:
             max=TJ
             max_i=i
