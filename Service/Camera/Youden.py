@@ -19,6 +19,8 @@ class youdenJ:
         self.eta=6.0
         self.getPosList()
         self.getNgeList()
+        print("pos_len:{}".format(len(self.pos_list)))
+        print("neg_len:{}".format(len(self.neg_list)))
 
 
     def get_dist(self,path):
@@ -84,13 +86,13 @@ class youdenJ:
             neg = load_dict['neg']
             negMax=load_dict['negMax']
             if (np.array(pos) == np.array(self.pos_filenames)).all() and (np.array(neg) == np.array(self.neg_filenames)).all() and negMax==neg_max:
-                print("exist:")
-                print("eta")
-                print(result_eta)
-                print("sens")
-                print(sens)
-                print("spec")
-                print(spec)
+                # print("exist:")
+                # print("eta")
+                # print(result_eta)
+                # print("sens")
+                # print(sens)
+                # print("spec")
+                # print(spec)
                 return result_eta, sens, spec
             else:
                 print("not exist")
@@ -105,12 +107,12 @@ class youdenJ:
                 eta_dic = {'eta': result_eta, 'sens': sens, 'spec': spec, 'pos': self.pos_filenames,
                            'neg': self.neg_filenames,'negMax':neg_max}
                 np.save(os.path.join(self.profilepath, 'eta_dic.npy'), eta_dic, allow_pickle=True)
-                print("eta")
-                print(result_eta)
-                print("sens")
-                print(sens)
-                print("spec")
-                print(spec)
+                # print("eta")
+                # print(result_eta)
+                # print("sens")
+                # print(sens)
+                # print("spec")
+                # print(spec)
                 return result_eta, sens, spec
         except:
             max=-10.0
@@ -123,52 +125,52 @@ class youdenJ:
             spec=self.getSpec(result_eta)
             eta_dic={'eta':result_eta,'sens':sens,'spec':spec,'pos':self.pos_filenames,'neg':self.neg_filenames,'negMax':neg_max}
             np.save(os.path.join(self.profilepath,'eta_dic.npy'),eta_dic,allow_pickle=True)
-            print("except:")
-            print("eta")
-            print(result_eta)
-            print("sens")
-            print(sens)
-            print("spec")
-            print(spec)
+            # print("except:")
+            # print("eta")
+            # print(result_eta)
+            # print("sens")
+            # print(sens)
+            # print("spec")
+            # print(spec)
             return result_eta,sens,spec
 
 
     def getAccurate(self,n):
-        print("验证拒绝成功概率")
+        # print("验证拒绝成功概率")
         eta, sens, spec = self.getMaxeEta()
         thsis=1.0-math.pow((1.0-spec),n)
         contTrue=0
         cont=0
         flag=[False]*n
-        print(len(flag))
+        # print(len(flag))
         for i in range(len(self.neg_list)):
             flag[i%n]=(self.neg_list[i]>eta)
             if (i+1)%n==0:
                 if  np.array(flag).any():
                     contTrue = contTrue + 1
                 cont=cont+1
-        print('周期次数:{}'.format(n))
-        print('理论概率:{}'.format(thsis))
-        print('实际概率:{}'.format(contTrue/cont))
+        # print('周期次数:{}'.format(n))
+        # print('理论概率:{}'.format(thsis))
+        # print('实际概率:{}'.format(contTrue/cont))
         return thsis,contTrue/cont
 
     def getFalserate(self, n):
-        print("验证接受成功概率")
+        # print("验证接受成功概率")
         eta, sens, spec = self.getMaxeEta()
         thsis = math.pow(sens,n)
         contTrue = 0
         cont = 0
         flag = [False] * n
-        print(len(flag))
+        # print(len(flag))
         for i in range(len(self.pos_list)):
             flag[i % n] = (self.pos_list[i] <= eta)
             if (i + 1) % n == 0:
                 if np.array(flag).all():
                     contTrue = contTrue + 1
                 cont = cont + 1
-        print('周期次数:{}'.format(n))
-        print('理论概率:{}'.format(thsis))
-        print('实际概率:{}'.format(contTrue / cont))
+        # print('周期次数:{}'.format(n))
+        # print('理论概率:{}'.format(thsis))
+        # print('实际概率:{}'.format(contTrue / cont))
         return thsis, contTrue / cont
 
 
@@ -181,10 +183,12 @@ if __name__ == '__main__':
     sens_max=0
     specMaxt = 0
     sensMaxt = 0
-    for i in range(1,10):
+    for i in range(1,11):
         spec_t,spec_real=ydj.getAccurate(i)
         sens_t,sens_real=ydj.getFalserate(i)
         TJ=spec_real+sens_real-1.0
+        print('\hline')
+        print('{}&{.2f%}&{.2f%}&{.2f%}&{.2f%}&{.2f%}&{.2f%}&{.2f%}&{.2f%}&{.2f%}\ \ '.format(i,sens_real,spec_real,1-spec_real,1-sens_real,TJ,sens_t,spec_t,1-spec_t,1-sens_t))
         if TJ>max:
             max=TJ
             max_i=i

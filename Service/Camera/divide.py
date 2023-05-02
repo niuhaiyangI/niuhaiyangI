@@ -331,6 +331,7 @@ class divide:
             print(dis)
             dist.append(dis)
         dist=torch.tensor(dist)
+        print('k:{}'.format(k))
         print("max")
         print(dist.max())
         print("average")

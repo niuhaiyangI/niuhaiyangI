@@ -23,7 +23,7 @@ class SLOT:
         self.max_average=self.red_average.max()
         self.min_frame=s_list[self.red_average.argmin()]
         self.min_average=self.red_average.min()
-        self.bin_size = 3
+        self.bin_size = 10
         self.bin = [x for x in range(256) if x % int(256 / self.bin_size) == 0]
         self.diff=self.max_frame-self.min_frame
         M_temp=np.zeros(self.diff.shape)
