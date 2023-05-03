@@ -117,6 +117,20 @@ class divide:
         s_list = []
         for i in peak:
             s_list.append(self._get_closest_point(i))
+        print(self.red_average.shape)
+        print(rol.shape)
+        print(self.frames_num)
+        x_rol=range(self.frames_num)
+        plt.close()
+        plt.xlabel('VideoFrames')
+        plt.ylabel('PixelRedChannelAverageValue')
+        plt.plot(x_rol,rol,'b',label='red_rolling')
+        plt.plot(x_rol, self.red_average, 'r', label='red_average')
+        plt.axvline(s_list[0], color='k', linestyle='--', label='CycleDevidePlace')
+        for i in range(1,len(s_list)):
+            plt.axvline(s_list[i], color='k', linestyle='--')
+        plt.legend(loc='best')
+        plt.show()
         slots = []
         score_sum = 0
         for i in range(len(s_list) - 1):

@@ -18,8 +18,9 @@ video_path="D:\\毕业设计\\niuhaiyangI\\实验素材\\profile\\3.mp4"
 # match_path="D:\\毕业设计\\niuhaiyangI\\实验素材\\12.mp4"
 # match_path="D:\\毕业设计\\niuhaiyangI\\实验素材\\test\\5.mp4"
 # match_path="D:\\毕业设计\\niuhaiyangI\\实验素材\\test\\pos\\1fps60.mp4"
-match_path="D:\\毕业设计\\niuhaiyangI\\实验素材\\test\\neg\\xxz.mp4"
+# match_path="D:\\毕业设计\\niuhaiyangI\\实验素材\\test\\neg\\xxz.mp4"
 
+match_path="D:\\毕业设计\\niuhaiyangI\\实验素材\\11.mp4"
 
 
 
@@ -32,22 +33,8 @@ if __name__ == '__main__':
     #
     # httpd.serve_forever()
 
-    camera = cv2.VideoCapture(video_path)
-    # camera = cv2.VideoCapture(match_path)
-    if camera.isOpened():
-        print("开始")
-    else:
-        camera.open(video)
-        if camera.isOpened():
-            print("成功")
-    div=divide(camera)
-    div.show_red_channel()
-    div.profile_feature("Niu Haiyang")
-    # div.match()
-    # video=video(camera)
-    # video.run()
-
-    # camera = cv2.VideoCapture(match_path)
+    # camera = cv2.VideoCapture(video_path)
+    # # camera = cv2.VideoCapture(match_path)
     # if camera.isOpened():
     #     print("开始")
     # else:
@@ -56,6 +43,20 @@ if __name__ == '__main__':
     #         print("成功")
     # div=divide(camera)
     # div.show_red_channel()
-    # # div.profile_feature("Niu Haiyang")
-    # div.match()
+    # div.profile_feature("Niu Haiyang")
+    # # div.match()
+    # # video=video(camera)
+    # # video.run()
+
+    camera = cv2.VideoCapture(match_path)
+    if camera.isOpened():
+        print("开始")
+    else:
+        camera.open(video)
+        if camera.isOpened():
+            print("成功")
+    div=divide(camera)
+    div.show_red_channel()
+    # div.profile_feature("Niu Haiyang")
+    div.match()
 # See PyCharm help at https://www.jetbrains.com/help/pycharm/

@@ -5,6 +5,7 @@ from Camera.finger_cover import video
 from Camera.divide import divide
 import numpy as np
 import math
+import matplotlib.pyplot as plt
 
 import os
 class youdenJ:
@@ -176,6 +177,12 @@ class youdenJ:
 
 
 if __name__ == '__main__':
+    x=range(1,11)
+    TPR_list=[]
+    TNR_list=[]
+    FNR_list=[]
+    FPR_list=[]
+    J_list=[]
     ydj=youdenJ()
     max=-10.0
     max_i=0
@@ -187,13 +194,24 @@ if __name__ == '__main__':
         spec_t,spec_real=ydj.getAccurate(i)
         spec_t=round(spec_t,4)
         spec_real=round(spec_real,4)
+        FPR=round(1-spec_real,4)
         sens_t,sens_real=ydj.getFalserate(i)
         sens_t = round(sens_t, 4)
         sens_real = round(sens_real, 4)
+        FNR=round(1 - sens_real, 4)
         TJ=spec_real+sens_real-1.0
         TJ=round(TJ,4)
-        print('\hline')
-        print('{}&{}&{}&{}&{}&{}&{}&{}&{}&{}\ \ '.format(i,sens_real,spec_real,round(1-spec_real,4),round(1-sens_real,4),TJ,sens_t,spec_t,round(1-spec_t,4),round(1-sens_t,4)))
+        TPR_list.append(sens_real)
+        TNR_list.append(spec_t)
+        FPR_list.append(FPR)
+        FNR_list.append(FNR)
+        J_list.append(TJ)
+        # print('\hline')
+        # print('{}&{}&{}&{}&{}&{}&{}&{}&{}&{}\ \ '.format(i,sens_real,spec_real,round(1-spec_real,4),round(1-sens_real,4),TJ,sens_t,spec_t,round(1-spec_t,4),round(1-sens_t,4)))
+        # print('\hline')
+        # print('{}&{}&{}&{}&{}&{} \\\ '.format(i,spec_real,spec_t,round(1-spec_real,4),round(1-spec_t,4),TJ))
+        # print('\hline')
+        # print('{}&{}&{}&{}&{}&{} \\\ '.format(i, sens_real, sens_t, round(1 - sens_real, 4), round(1 - sens_t, 4), TJ))
         if TJ>max:
             max=TJ
             max_i=i
@@ -201,6 +219,17 @@ if __name__ == '__main__':
             sens_max=sens_real
             specMaxt=spec_t
             sensMaxt=sens_t
+    plt.close()
+    plt.plot(x,TPR_list,'r',label='TPR')
+    plt.plot(x, TNR_list, 'g', label='TNR')
+    plt.plot(x, FPR_list, 'b', label='FPR')
+    plt.plot(x, FNR_list, 'k', label='FNR')
+    plt.plot(x, J_list, 'c', label='YoudenJ')
+    plt.plot(max_i,max,'p',label='MaxYoudenJPoint')
+    plt.xlabel('cycles')
+    plt.ylabel('rate')
+    plt.legend(loc='best')
+    plt.show()
     print('sensT:{}'.format(sensMaxt))
     print('specT:{}'.format(specMaxt))
     print('sens:{}'.format(sens_max))
