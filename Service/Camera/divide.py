@@ -126,7 +126,7 @@ class divide:
         plt.ylabel('PixelRedChannelAverageValue')
         plt.plot(x_rol,rol,'b',label='red_rolling')
         plt.plot(x_rol, self.red_average, 'r', label='red_average')
-        plt.axvline(s_list[0], color='k', linestyle='--', label='CycleDevidePlace')
+        plt.axvline(s_list[0], color='k', linestyle='--', label='CycleDivide')
         for i in range(1,len(s_list)):
             plt.axvline(s_list[i], color='k', linestyle='--')
         plt.legend(loc='best')
