@@ -17,6 +17,10 @@ import json
 # 获取帧率
 # fps = videoCapture.get(cv2.CAP_PROP_FPS)
 from Camera.differentiation import SLOT
+import matplotlib.pyplot as plt
+plt.rcParams["font.sans-serif"]=["SimHei"]
+plt.rcParams["axes.unicode_minus"]=False
+
 
 
 class divide:
@@ -24,8 +28,6 @@ class divide:
         print("SLOT devide starting....")
         self.path='./Profile/User'
         self.path_deafult='../Profile/User'
-        self.distance=4
-        self.rolling_window=2*self.distance+1
         self.heart_pump_seconds = 0.8  ##心脏跳动时间
         self.heart_pump_max = 1.3
         self.heart_pump_min = 0.3
@@ -33,6 +35,8 @@ class divide:
         self.frames_num = int(self.camera.get(cv2.CAP_PROP_FRAME_COUNT))
         # print(self.frames_num)
         self.fps = int(self.camera.get(cv2.CAP_PROP_FPS))
+        self.distance = int((self.fps/30)*4)
+        self.rolling_window = 2 * self.distance + 1
         self.window = int(self.heart_pump_seconds * self.fps)
         self.window_max = int(self.heart_pump_max * self.fps)
         self.window_min = int(self.heart_pump_min * self.fps)
@@ -89,14 +93,16 @@ class divide:
         plt.show()
 
     def print(self):
-        print("心脏跳动时间(单位  秒):" + str(self.heart_pump_seconds))
-        print("心脏跳动分帧窗口大小（心脏跳动一次所需帧数）:" + str(self.window))
+        # print("心脏跳动时间(单位  秒):" + str(self.heart_pump_seconds))
+        # print("心脏跳动分帧窗口大小（心脏跳动一次所需帧数）:" + str(self.window))
         print("帧数:" + str(self.frames_num))
         print("帧率(单位  帧/秒):" + str(self.fps))
         print("心脏跳动次数:" + str(self.slots_size))
         print("心脏实际跳动时间(单位：秒):" + str(self.real_pump_time))
+        print("心率：{}".format(60/self.real_pump_time))
         print("评估参数score:" + str(self.score_average))
-        print("pixel点数:" + str(self.pixel_num))
+        print("分辨率：{}".format(self.img_list[0].shape))
+        # print("pixel点数:" + str(self.pixel_num))
         print('Overdown')
 
 
@@ -122,14 +128,17 @@ class divide:
         print(self.frames_num)
         x_rol=range(self.frames_num)
         plt.close()
-        plt.xlabel('VideoFrames')
-        plt.ylabel('PixelRedChannelAverageValue')
-        plt.plot(x_rol,rol,'b',label='red_rolling')
-        plt.plot(x_rol, self.red_average, 'r', label='red_average')
-        plt.axvline(s_list[0], color='k', linestyle='--', label='CycleDivide')
+        plt.xlabel('视频流（单位：帧）')
+        plt.ylabel('红色通道平均光强')
+        # plt.xlabel('VideoFrames(Frame)')
+        # plt.ylabel('PixelRedChannelAverageValue(light intensity)')
+        plt.plot(x_rol,rol,'b',label='红色通道均值曲线')
+        plt.plot(x_rol, self.red_average, 'r', label='平滑后的红色通道均值曲线')
+        plt.axvline(s_list[0], color='k', linestyle='--', label='心动周期划分', lw=0.5)
         for i in range(1,len(s_list)):
-            plt.axvline(s_list[i], color='k', linestyle='--')
+            plt.axvline(s_list[i], color='k', linestyle='--', lw=0.5)
         plt.legend(loc='best')
+        plt.title('光强变化图(红色通道)')
         plt.show()
         slots = []
         score_sum = 0
@@ -162,7 +171,7 @@ class divide:
         for slot in self.slots_list:
             slot.W_c=self.W_c[index:index+slot.slot_size]
             index=index+slot.slot_size
-            # slot.show_Wc()
+            slot.show_Wc()
 
     def high_pass1(self):
         T_Wc=torch.zeros([self.W_c.shape[0],3])
@@ -267,24 +276,24 @@ class divide:
 
         A=torch.tensor(feature_list).cuda()
         A=A.transpose(0,1)
-        print(A)
-        print(A.shape)
+        # print(A)
+        # print(A.shape)
         U,S,Vh=torch.linalg.svd(A)
-        print(U)
-        print(U.shape)
+        # print(U)
+        # print(U.shape)
         T=torch.mm(U,A).cuda()
-        print("T<0")
-        print((T<0).sum())
-        print(T.shape)
-        print((T[0:1].sum(dim=0)/T.sum(dim=0)).max())
+        # print("T<0")
+        # print((T<0).sum())
+        # print(T.shape)
+        # print((T[0:1].sum(dim=0)/T.sum(dim=0)).max())
 
         T_var=torch.var(T,dim=1,unbiased=False,keepdim=False)
-        print("T_var")
-        print(T_var)
-        print(T_var.shape)
+        # print("T_var")
+        # print(T_var)
+        # print(T_var.shape)
         a,index=torch.sort(T_var,descending=True)
-        print(a)
-        print(index)
+        # print(a)
+        # print(index)
         sum=0.0
         k=1
         cont=2
@@ -294,15 +303,15 @@ class divide:
                 sum=sum+(T_var[i]/T_var.sum())
             else:
                 sum = sum + (T_var[i] / T_var.sum())
-                print(T_var[i]/T_var.sum())
+                # print(T_var[i]/T_var.sum())
             if sum>=threshold:
-                print(sum)
-                print(k)
+                # print(sum)
+                # print(k)
                 break
             k=k+1
         id,_=torch.sort(index[2:k])
-        print(id)
-        print(id.shape)
+        # print(id)
+        # print(id.shape)
         T_list=T.tolist()
         f_vector=[]
         for i in id:
@@ -387,15 +396,15 @@ class divide:
                 s.append(T_list[i])
             s = torch.tensor(s).transpose(0, 1)
             dis=self.dist(f_vector,s)
-            print(dis)
+            # print(dis)
             dist.append(dis)
         dist=torch.tensor(dist)
-        print("max")
-        print(dist.max())
-        print("average")
-        print(dist.sum()/dist.shape[0])
-        print("min")
-        print(dist.min())
+        # print("max")
+        # print(dist.max())
+        # print("average")
+        # print(dist.sum()/dist.shape[0])
+        # print("min")
+        # print(dist.min())
         var=torch.var(dist,unbiased=False)
         return dist.tolist(),var ,dist.max(),dist.min(),dist.sum()/dist.shape[0]
 

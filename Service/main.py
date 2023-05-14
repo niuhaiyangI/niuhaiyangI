@@ -9,13 +9,15 @@ from Camera.finger_cover import video
 from Camera.divide import divide
 from service.service import demo_app
 from wsgiref.simple_server import make_server
-
+import matplotlib.pyplot as plt
+plt.rcParams["font.sans-serif"]=["SimHei"]
+plt.rcParams["axes.unicode_minus"]=False
 
 # video_path="D:\\毕业设计\\niuhaiyangI\\实验素材\\profile\\1fps60.mp4"
-video_path="D:\\毕业设计\\niuhaiyangI\\实验素材\\profile\\3.mp4"
+video_path="D:\\毕业设计\\niuhaiyangI\\实验素材\\profile\\mid.mp4"
 
 
-# match_path="D:\\毕业设计\\niuhaiyangI\\实验素材\\12.mp4"
+# match_path="D:\\毕业设计\\niuhaiyangI\\实验素材\\11.mp4"
 # match_path="D:\\毕业设计\\niuhaiyangI\\实验素材\\test\\5.mp4"
 # match_path="D:\\毕业设计\\niuhaiyangI\\实验素材\\test\\pos\\4.mp4"
 match_path="D:\\毕业设计\\niuhaiyangI\\实验素材\\test\\neg\\wyh.mp4"

@@ -6,12 +6,18 @@ from Camera.divide import divide
 import numpy as np
 import math
 import matplotlib.pyplot as plt
+import matplotlib.pyplot as plt
+plt.rcParams["font.sans-serif"]=["SimHei"]
+plt.rcParams["axes.unicode_minus"]=False
+
 
 import os
 class youdenJ:
     def __init__(self):
         self.profilepath = '../Profile/User'
         self.path='D:\\毕业设计\\niuhaiyangI\\实验素材\\test'
+        self.posdir='pos30fps1080p'
+        self.negdir = 'neg30fps1080p'
         self.pos_list=[]
         self.pos_filenames=[]
         self.neg_list=[]
@@ -20,8 +26,8 @@ class youdenJ:
         self.eta=6.0
         self.getPosList()
         self.getNgeList()
-        print("pos_len:{}".format(len(self.pos_list)))
-        print("neg_len:{}".format(len(self.neg_list)))
+        # print("pos_len:{}".format(len(self.pos_list)))
+        # print("neg_len:{}".format(len(self.neg_list)))
 
 
     def get_dist(self,path):
@@ -38,7 +44,7 @@ class youdenJ:
 
 
     def getPosList(self):
-        path=os.path.join(self.path,'pos')
+        path=os.path.join(self.path,self.posdir)
         for dirpath, dirnames, filenames in os.walk(path):
             for filename in filenames:
                 filepath = os.path.join(dirpath, filename)
@@ -51,7 +57,7 @@ class youdenJ:
 
 
     def getNgeList(self):
-        path = os.path.join(self.path, 'neg')
+        path = os.path.join(self.path, self.negdir)
         for dirpath, dirnames, filenames in os.walk(path):
             for filename in filenames:
                 filepath = os.path.join(dirpath, filename)
@@ -211,7 +217,7 @@ if __name__ == '__main__':
         # print('\hline')
         # print('{}&{}&{}&{}&{}&{} \\\ '.format(i,spec_real,spec_t,round(1-spec_real,4),round(1-spec_t,4),TJ))
         # print('\hline')
-        # print('{}&{}&{}&{}&{}&{} \\\ '.format(i, sens_real, sens_t, round(1 - sens_real, 4), round(1 - sens_t, 4), TJ))
+        print('{}&{}&{}&{}&{}&{}&{}&{}&{}&{} \\\ '.format(i, sens_real, sens_t, round(1 - sens_real, 4), round(1 - sens_t, 4),spec_real,spec_t,round(1-spec_real,4),round(1-spec_t,4),TJ))
         if TJ>max:
             max=TJ
             max_i=i
@@ -225,9 +231,11 @@ if __name__ == '__main__':
     plt.plot(x, FPR_list, 'b', label='FPR')
     plt.plot(x, FNR_list, 'k', label='FNR')
     plt.plot(x, J_list, 'c', label='YoudenJ')
-    plt.plot(max_i,max,'p',label='MaxYoudenJPoint')
-    plt.xlabel('cycles')
-    plt.ylabel('rate')
+    # plt.plot(max_i,max,'p',label='MaxYoudenJPoint')
+    plt.plot(max_i,max,'p',label='最佳YoudenJ取值点')
+    plt.xlabel('验证心动周期数')
+    plt.ylabel('各参数实验概率')
+    plt.title('随验证步长增加各参数在测试数据上的变化')
     plt.legend(loc='best')
     plt.show()
     print('sensT:{}'.format(sensMaxt))

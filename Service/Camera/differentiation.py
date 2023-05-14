@@ -7,6 +7,12 @@ import numpy as np
 import matplotlib.pyplot as plt
 from scipy import signal
 from scipy.fftpack import fft,ifft
+import matplotlib.pyplot as plt
+plt.rcParams["font.sans-serif"]=["SimHei"]
+plt.rcParams["axes.unicode_minus"]=False
+
+
+
 class SLOT:
     def __init__(self, slot_size, s_list, red_average,fps):
         self.gama=5
@@ -61,6 +67,8 @@ class SLOT:
         plt.plot(x, red_channel.tolist(), color='r', label='red_average')
         plt.plot(x, green_channel.tolist(), color='g', label='green_average')
         plt.plot(x, blue_channel.tolist(), color='b', label='blue_average')
+        plt.xlabel('归一化心动时间')
+        plt.ylabel('归一化心动幅度')
         plt.legend(loc='best')
         # plt.plot(x,self.W_c[:,2], color='r', label='red_average')
         # plt.plot(x, self.W_c[:, 1], color='g', label='green_average')
@@ -117,7 +125,7 @@ class SLOT:
         red_channel = (red_channel - red_channel.min()) / (red_channel.max() - red_channel.min())
         green_channel = (green_channel - green_channel.min()) / (green_channel.max() - green_channel.min())
         blue_channel = (blue_channel - blue_channel.min()) / (blue_channel.max() - blue_channel.min())
-        red_faeture=self.N_feature_get(red_channel)
+        red_faeture=self.N_feature_get(red_channel,red=True)
         green_faeture = self.N_feature_get(green_channel)
         blue_faeture = self.N_feature_get(blue_channel)
         return red_faeture, green_faeture, blue_faeture
@@ -135,9 +143,18 @@ class SLOT:
         sum=(red_channel+green_channel)/2
         plt.close()
         # plt.plot(x, self.W_c[:,2],color='pink')
-        plt.plot(x, red_channel.tolist(), color='r', label='red_average')
-        plt.plot(x, green_channel.tolist(), color='g', label='green_average')
-        plt.plot(x, blue_channel.tolist(), color='b', label='blue_average')
+        # plt.plot(x, red_channel.tolist(), color='r', label='red_average')
+        # plt.plot(x, green_channel.tolist(), color='g', label='green_average')
+        # plt.plot(x, blue_channel.tolist(), color='b', label='blue_average')
+        plt.plot(x, red_channel.tolist(), color='r', label='红色通道')
+        plt.plot(x, green_channel.tolist(), color='g', label='绿色通道')
+        plt.plot(x, blue_channel.tolist(), color='b', label='蓝色通道')
+        font=15
+        plt.xlabel('归一化心动时间')
+        plt.ylabel('归一化心动幅度')
+        plt.title('归一化三色通道光强图')
+        # plt.xlabel('Normalized cardiac time')
+        # plt.ylabel('Normalized cardiac amplitude')
         plt.legend(loc='best')
         # check=sum
         # # check=red_channel
@@ -176,6 +193,8 @@ class SLOT:
         plt.plot(x, rol, color='pink', label='blue_average')
         plt.plot(x[peak], check[peak].tolist(), "x", color='black',label='blue_average')
         plt.plot(x[peak2], check[peak2].tolist(), "x", color='pink', label='blue_average')
+        plt.xlabel('Normalized cardiac time')
+        plt.ylabel('Normalized cardiac amplitude')
         plt.show()
 
     def show_Wc2(self):
@@ -203,6 +222,8 @@ class SLOT:
         plt.plot(x, rol, color='pink', label='blue_average')
         plt.plot(x[peak], check[peak].tolist(), "x", color='black',label='blue_average')
         plt.plot(x[peak2], check[peak2].tolist(), "x", color='pink', label='blue_average')
+        plt.xlabel('Normalized cardiac time')
+        plt.ylabel('Normalized cardiac amplitude(red)')
         plt.show()
 
 
@@ -265,47 +286,60 @@ class SLOT:
         #     print(t4)
 
         s1=abs(h1/t1)
-        s2 = abs(h2 / t2)
+        if t2==0:
+            s2=0
+        else:
+            s2 = abs(h2 / t2)
         s3 = abs(1.0 / t3)
         s4 = abs(check[self.slot_size-1] / t4)
         if red:
             plt.close()
-            plt.plot(x,check,color='b',label='red_average')
-            plt.axvline(x=0, ymin=0, ymax=check[0], c="k", ls="--", lw=2)
-            plt.axvline(x=1.0, ymin=0, ymax=check[-1], c="k", ls="--", lw=2)
+            plt.plot(x,check,color='b',label='红色通道光强')
+            # plt.plot(x,check,color='b',label='red_average')
+            plt.axvline(x=0, ymin=0, ymax=check[0], c="k", ls="--", lw=0.5)
+            plt.axvline(x=1.0, ymin=0, ymax=check[-1], c="k", ls="--", lw=0.5)
             plt.scatter(DP_x/(self.slot_size - 1), check[DP_x], color='r', s=50)  # 在最大值点上绘制一个红色的圆点
-            plt.text(DP_x/(self.slot_size - 1), check[DP_x]+0.01,'DP')
-            plt.axvline(x=DP_x/(self.slot_size - 1), ymin=0, ymax=check[DP_x], c="k", ls="--", lw=2)
+            plt.text(DP_x/(self.slot_size - 1), check[DP_x]+0.03,'DP')
+            plt.axvline(x=DP_x/(self.slot_size - 1), ymin=0, ymax=check[DP_x], c="k", ls="--", lw=0.5)
             plt.scatter(DN_x/(self.slot_size - 1), check[DN_x]+0.01, color='r', s=50)  # 在最大值点上绘制一个红色的圆点
-            plt.text(DN_x/(self.slot_size - 1), check[DN_x],'DN')
-            plt.axvline(x=DN_x / (self.slot_size - 1), ymin=0, ymax=check[DN_x], c="k", ls="--", lw=2)
+            plt.text(DN_x/(self.slot_size - 1), check[DN_x]+0.03,'DN')
+            plt.axvline(x=DN_x / (self.slot_size - 1), ymin=0, ymax=check[DN_x], c="k", ls="--", lw=0.5)
             plt.scatter(SP_x/(self.slot_size - 1), check[SP_x]+0.01, color='r', s=50)  # 在最大值点上绘制一个红色的圆点
-            plt.text(SP_x/(self.slot_size - 1), check[SP_x],'SP')
-            plt.axvline(x=SP_x / (self.slot_size - 1), ymin=0, ymax=check[SP_x], c="k", ls="--", lw=2)
-            plt.axhline(y=0,xmin=0,xmax=DP_x/ (self.slot_size - 1),c='k',ls='solid',lw=2)
-            plt.axhline(y=0, xmin=DP_x / (self.slot_size - 1), xmax=DN_x / (self.slot_size - 1), c='k', ls='solid', lw=2)
-            plt.axhline(y=0, xmin=DN_x / (self.slot_size - 1), xmax=SP_x / (self.slot_size - 1), c='k', ls='solid', lw=2)
-            plt.axhline(y=0, xmin=SP_x / (self.slot_size - 1), xmax=1.0, c='k', ls='solid', lw=2)
-            plt.text(DP_x/ (self.slot_size - 1), 0.01, 't1')
-            plt.text(DN_x/ (self.slot_size - 1), 0.01, 't2')
-            plt.text(SP_x/ (self.slot_size - 1), 0.01, 't3')
-            plt.text(1.0, 0.01, 't4')
+            plt.text(SP_x/(self.slot_size - 1), check[SP_x]+0.03,'SP')
+            plt.axvline(x=SP_x / (self.slot_size - 1), ymin=0, ymax=check[SP_x], c="k", ls="--", lw=0.5)
+            plt.axhline(y=0,xmin=0,xmax=DP_x/ (self.slot_size - 1),c='k',ls='solid',lw=0.5)
+            plt.axhline(y=0, xmin=DP_x / (self.slot_size - 1), xmax=DN_x / (self.slot_size - 1), c='k', ls='solid', lw=0.5)
+            plt.axhline(y=0, xmin=DN_x / (self.slot_size - 1), xmax=SP_x / (self.slot_size - 1), c='k', ls='solid', lw=0.5)
+            plt.axhline(y=0, xmin=SP_x / (self.slot_size - 1), xmax=1.0, c='k', ls='solid', lw=0.5)
+            plt.axhline(0)
+            plt.axvline(0)
+            plt.text(DP_x/ (self.slot_size - 1)-0.03, 0.01, 't1')
+            plt.text(DN_x/ (self.slot_size - 1)-0.03, 0.01, 't2')
+            plt.text(SP_x/ (self.slot_size - 1)-0.03, 0.01, 't3')
+            plt.text(1.0-0.03, 0.01, 't4')
+            plt.title('收缩舒张特征（红色通道）')
+            plt.xlabel('归一化心动时间')
+            plt.ylabel('归一化心动幅度（红色通道）')
+            # plt.title('Systolic Diastolic Features')
+            # plt.xlabel('Normalized cardiac time')
+            # plt.ylabel('Normalized cardiac amplitude(red)')
             plt.legend(loc='best')
             plt.show()
         return h1,h2,t1,t2,t3,t4,s1,s2,s3,s4
 
 
     def N_feature_get(self,input,red=False):
-        band1 = [0.1, 0.3]
-        default1 = 0.2
-        band2 = [0.21, 0.45]
-        default2 = 0.3
-        band3 = [0.31, 0.6]
-        default3 = 0.5
-        band4 = [0.5, 0.8]
-        default4 = 0.7
-        band5 = [0.7, 1.0]
-        default5 = 0.9
+        # band1 = [0.1, 0.3]
+        # default1 = 0.2
+        # band2 = [0.21, 0.45]
+        # default2 = 0.3
+        # band3 = [0.31, 0.6]
+        # default3 = 0.5
+        # band4 = [0.5, 0.8]
+        # default4 = 0.7
+        # band5 = [0.7, 1.0]
+        # default5 = 0.9
+
         # band1 = [0.1, 0.3]
         # default1 = 0.2
         # band2 = [0.4, 0.6]
@@ -314,8 +348,31 @@ class SLOT:
         # default3 = 0.5
         # band4 = [0.7, 0.8]
         # default4 = 0.7
-        # band5 = [0.7, 1.0]
+        # band5 = [0.8, 1.0]
         # default5 = 0.9
+
+        # band1 = [0.1, 0.3]
+        # default1 = 0.2
+        # band2 = [0.4, 0.6]
+        # default2 = 0.3
+        # band3 = [0.6, 0.8]
+        # default3 = 0.5
+        # band4 = [0.71, 0.9]
+        # default4 = 0.75
+        # band5 = [0.8, 1.0]
+        # default5 = 0.9
+
+        band1 = [0.0, 0.1]
+        default1 = 0.2
+        band2 = [0.2, 0.4]
+        default2 = 0.3
+        band3 = [0.4, 0.6]
+        default3 = 0.5
+        band4 = [0.6, 0.7]
+        default4 = 0.7
+        band5 = [0.7, 1.0]
+        default5 = 0.9
+        font=18
         check = input.tolist()
         check_neg=(-input).tolist()
         Series = pd.Series(check)
@@ -369,37 +426,46 @@ class SLOT:
         if red:
             plt.close()
             x = (torch.tensor(range(self.slot_size))) / (self.slot_size - 1)
-            plt.plot(x,check,color='b',label='red_average')
-            plt.axvline(x=0, ymin=0, ymax=check[0], c="k", ls="--", lw=2)
-            plt.axvline(x=1.0, ymin=0, ymax=check[-1], c="k", ls="--", lw=2)
+            plt.plot(x,check,color='b',label='红色通道光强')
+            # plt.plot(x,check,color='b',label='red_average')
+            plt.axvline(x=0, ymin=0, ymax=check[0], c="k", ls="--", lw=0.5)
+            plt.axvline(x=1.0, ymin=0, ymax=check[-1], c="k", ls="--", lw=0.5)
             plt.scatter(y1_x/(self.slot_size - 1), check[y1_x], color='r', s=50)  # 在最大值点上绘制一个红色的圆点
-            plt.text(y1_x/(self.slot_size - 1), check[y1_x]+0.01,'y1')
-            plt.axvline(x=y1_x/(self.slot_size - 1), ymin=0, ymax=check[y1_x], c="k", ls="--", lw=2)
+            plt.text(y1_x/(self.slot_size - 1)+0.05, check[y1_x]+0.01,'y1')
+            plt.axvline(x=y1_x/(self.slot_size - 1), ymin=0, ymax=check[y1_x], c="k", ls="--", lw=0.5)
             plt.scatter(y2_x/(self.slot_size - 1), check[y2_x]+0.01, color='r', s=50)  # 在最大值点上绘制一个红色的圆点
-            plt.text(y2_x/(self.slot_size - 1), check[y2_x],'y2')
-            plt.axvline(x=y2_x / (self.slot_size - 1), ymin=0, ymax=check[y2_x], c="k", ls="--", lw=2)
+            plt.text(y2_x/(self.slot_size - 1)+0.05, check[y2_x],'y2')
+            plt.axvline(x=y2_x / (self.slot_size - 1), ymin=0, ymax=check[y2_x], c="k", ls="--", lw=0.5)
             plt.scatter(y3_x/(self.slot_size - 1), check[y3_x]+0.01, color='r', s=50)  # 在最大值点上绘制一个红色的圆点
-            plt.text(y3_x/(self.slot_size - 1), check[y3_x],'y3')
-            plt.axvline(x=y3_x / (self.slot_size - 1), ymin=0, ymax=check[y3_x], c="k", ls="--", lw=2)
+            plt.text(y3_x/(self.slot_size - 1)+0.05, check[y3_x],'y3')
+            plt.axvline(x=y3_x / (self.slot_size - 1), ymin=0, ymax=check[y3_x], c="k", ls="--", lw=0.5)
             plt.scatter(y4_x / (self.slot_size - 1), check[y4_x] + 0.01, color='r', s=50)  # 在最大值点上绘制一个红色的圆点
-            plt.text(y4_x / (self.slot_size - 1), check[y4_x], 'y4')
-            plt.axvline(x=y4_x / (self.slot_size - 1), ymin=0, ymax=check[y4_x], c="k", ls="--", lw=2)
+            plt.text(y4_x / (self.slot_size - 1)+0.05, check[y4_x], 'y4')
+            plt.axvline(x=y4_x / (self.slot_size - 1), ymin=0, ymax=check[y4_x], c="k", ls="--", lw=0.5)
             plt.scatter(y5_x / (self.slot_size - 1), check[y5_x] + 0.01, color='r', s=50)  # 在最大值点上绘制一个红色的圆点
-            plt.text(y5_x / (self.slot_size - 1), check[y5_x], 'y5')
-            plt.axvline(x=y5_x / (self.slot_size - 1), ymin=0, ymax=check[y5_x], c="k", ls="--", lw=2)
-            plt.axhline(y=0, xmin=y1_x / (self.slot_size - 1), xmax=y2_x / (self.slot_size - 1), c='k', ls='solid', lw=1)
-            plt.axhline(y=0, xmin=y2_x / (self.slot_size - 1), xmax=y3_x / (self.slot_size - 1), c='k', ls='solid', lw=1)
-            plt.axhline(y=0, xmin=y3_x / (self.slot_size - 1), xmax=y4_x / (self.slot_size - 1), c='k', ls='solid', lw=1)
+            plt.text(y5_x / (self.slot_size - 1)+0.05, check[y5_x], 'y5')
+            plt.axvline(x=y5_x / (self.slot_size - 1), ymin=0, ymax=check[y5_x], c="k", ls="--", lw=0.5)
+            plt.axhline(y=0, xmin=y1_x / (self.slot_size - 1), xmax=y2_x / (self.slot_size - 1), c='k', ls='solid', lw=0.5)
+            plt.axhline(y=0, xmin=y2_x / (self.slot_size - 1), xmax=y3_x / (self.slot_size - 1), c='k', ls='solid', lw=0.5)
+            plt.axhline(y=0, xmin=y3_x / (self.slot_size - 1), xmax=y4_x / (self.slot_size - 1), c='k', ls='solid', lw=0.5)
             plt.axhline(y=0, xmin=y4_x / (self.slot_size - 1), xmax=y5_x / (self.slot_size - 1), c='k', ls='solid',
-                        lw=1)
+                        lw=0.5)
             plt.axhline(y=0, xmin=y5_x / (self.slot_size - 1), xmax=1.0, c='k', ls='solid',
-                        lw=1)
-            plt.text(y2_x/ (self.slot_size - 1), -0.04, 'x1')
-            plt.text(y3_x/ (self.slot_size - 1), -0.04, 'x2')
-            plt.text(y4_x / (self.slot_size - 1), -0.04, 'x3')
-            plt.text(y5_x / (self.slot_size - 1), -0.04, 'x4')
+                        lw=0.5)
+            plt.axhline(0)
+            plt.axvline(0)
+            plt.text(y2_x/ (self.slot_size - 1)-0.05, -0.04, 'x1')
+            plt.text(y3_x/ (self.slot_size - 1)-0.05, -0.04, 'x2')
+            plt.text(y4_x / (self.slot_size - 1)-0.05, -0.04, 'x3')
+            plt.text(y5_x / (self.slot_size - 1)-0.05, -0.04, 'x4')
             plt.text(1.0, -0.04, 'x5')
-            plt.legend(loc='best')
+            plt.title('非基准特征（红色通道）',fontsize=font)
+            plt.xlabel('归一化心动时间',fontsize=font)
+            plt.ylabel('归一化心动幅度（红色通道）',fontsize=font)
+            # plt.title('Non-fiducial Features')
+            # plt.xlabel('Normalized cardiac time')
+            # plt.ylabel('Normalized cardiac amplitude')
+            plt.legend(loc='best',fontsize=font)
             plt.show()
 
         return x1,x3,x5,d12,d34,d5
