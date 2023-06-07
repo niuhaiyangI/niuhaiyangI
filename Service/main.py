@@ -14,7 +14,7 @@ plt.rcParams["font.sans-serif"]=["SimHei"]
 plt.rcParams["axes.unicode_minus"]=False
 
 # video_path="D:\\毕业设计\\niuhaiyangI\\实验素材\\profile\\1fps60.mp4"
-video_path="D:\\毕业设计\\niuhaiyangI\\实验素材\\profile\\mid.mp4"
+video_path="D:\\毕业设计\\niuhaiyangI\\实验素材\\profile\\30fps1080p.mp4"
 
 
 # match_path="D:\\毕业设计\\niuhaiyangI\\实验素材\\11.mp4"

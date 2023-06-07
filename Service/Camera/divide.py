@@ -11,6 +11,7 @@ import cv2
 from scipy import signal
 import pandas as pd
 import json
+from PIL import Image, ImageDraw
 
 # 获取数据帧数量
 # frames = videoCapture.get(cv2.CAP_PROP_FRAME_COUNT)
@@ -20,12 +21,15 @@ from Camera.differentiation import SLOT
 import matplotlib.pyplot as plt
 plt.rcParams["font.sans-serif"]=["SimHei"]
 plt.rcParams["axes.unicode_minus"]=False
-
+outfile="out_over.txt"
+out_file=open(outfile,'w+')
 
 
 class divide:
     def __init__(self, cam):
         print("SLOT devide starting....")
+        self.threshold=0.5
+        self.percent=0.5
         self.path='./Profile/User'
         self.path_deafult='../Profile/User'
         self.heart_pump_seconds = 0.8  ##心脏跳动时间
@@ -56,6 +60,41 @@ class divide:
         self.slots_list,self.slots_size,self.score_average,self.heart_pump_frames,self.divide,self.W_c = self.get_slots()
         self.real_pump_time=((self.heart_pump_frames)/self.fps)/self.slots_size
         self.print()
+
+
+    def red_capture(self,img):
+        img_tensor = torch.asarray(np.array(img),dtype=torch.int).cuda()
+        pr_tensor=img_tensor[:,:,2]/(img_tensor[:,:,0]+img_tensor[:,:,1]+img_tensor[:,:,2]).cuda()
+        cmp_torch=torch.tensor([[self.threshold]*pr_tensor.shape[1]]*pr_tensor.shape[0]).cuda()
+        cmp=torch.ge(pr_tensor,cmp_torch).cuda()
+        red_over=cmp.sum()/(img.shape[0]*img.shape[1])
+        # t_img=img_tensor.clone()
+        # t_img[:,:,0]=img_tensor[:,:,2]
+        # t_img[:,:,2]=img_tensor[:,:,0]
+        # t_img=t_img.cpu()
+        if red_over>=self.percent:
+            # # 透明背景，RGBA值为：(0, 0, 0, 0)
+            # imgP = Image.new('RGB', (img.shape[0], img.shape[1]), (0, 0, 0))
+            # # img = Image.new('RGBA', (width, height), (0, 0, 0, 0))
+            # # 填充像素
+            # print(img)
+            # print(type(img))
+            # img = Image.fromarray(t_img.numpy(),"RGB")
+            # img.show()
+            # print(img)
+            # imgP.putdata(img,scale=1.0)
+            # # 显示图片
+            # imgP.show()
+            # # 保存图片
+            # out_file.write("1")
+            return True
+        else:
+            # img = Image.fromarray(t_img.numpy(), "RGB")
+            # print(t_img.shape)
+            # img.show()
+
+            # out_file.write("0")
+            return False
 
     def cal_red(self):
         for i in range(len(self.img_list)):
@@ -123,6 +162,8 @@ class divide:
         s_list = []
         for i in peak:
             s_list.append(self._get_closest_point(i))
+        if len(s_list)<=1:
+            return None,-1,-1,-1,None,None
         print(self.red_average.shape)
         print(rol.shape)
         print(self.frames_num)
@@ -132,8 +173,8 @@ class divide:
         plt.ylabel('红色通道平均光强')
         # plt.xlabel('VideoFrames(Frame)')
         # plt.ylabel('PixelRedChannelAverageValue(light intensity)')
-        plt.plot(x_rol,rol,'b',label='红色通道均值曲线')
-        plt.plot(x_rol, self.red_average, 'r', label='平滑后的红色通道均值曲线')
+        plt.plot(x_rol,rol,'b',label='平滑后的红色通道均值曲线')
+        plt.plot(x_rol, self.red_average, 'r', label='红色通道均值曲线')
         plt.axvline(s_list[0], color='k', linestyle='--', label='心动周期划分', lw=0.5)
         for i in range(1,len(s_list)):
             plt.axvline(s_list[i], color='k', linestyle='--', lw=0.5)
@@ -159,7 +200,10 @@ class divide:
 
     #带通滤波
     def band_pass(self):
-        b, a = signal.butter(10, [0.3, 10], btype='bandpass',fs=self.fps)
+        top=10.0
+        if self.fps<=20:
+            top=(self.fps-1)/2
+        b, a = signal.butter(10, [0.3, top], btype='bandpass',fs=self.fps)
         # b, a = signal.butter(10, 0.3*2, btype='highpass',fs=30)
         r = signal.filtfilt(b, a, self.W_c[:,2].tolist(),padtype='odd')
         g = signal.filtfilt(b, a, self.W_c[:, 1].tolist(),padtype='odd')
@@ -171,7 +215,7 @@ class divide:
         for slot in self.slots_list:
             slot.W_c=self.W_c[index:index+slot.slot_size]
             index=index+slot.slot_size
-            slot.show_Wc()
+            # slot.show_Wc()
 
     def high_pass1(self):
         T_Wc=torch.zeros([self.W_c.shape[0],3])
@@ -326,17 +370,40 @@ class divide:
 
 
     def match(self):
-        U=torch.load(os.path.join(self.path,'U.pt'))
-        f_vector=torch.load(os.path.join(self.path,'f_vector.pt'))
-        id=torch.load(os.path.join(self.path,'id.pt'))
-        load_dict = np.load(os.path.join(self.path,'profile_dic.npy'),allow_pickle=True).item()
-        k=load_dict['k']
+        print("start match")
+        try:
+            U=torch.load(os.path.join(self.path,'U.pt'))
+            f_vector=torch.load(os.path.join(self.path,'f_vector.pt'))
+            id=torch.load(os.path.join(self.path,'id.pt'))
+            load_dict = np.load(os.path.join(self.path,'profile_dic.npy'),allow_pickle=True).item()
+            eta_load=np.load(os.path.join(self.path,'eta_dic.npy'),allow_pickle=True).item()
+            eta=eta_load['eta']
+            k = load_dict['k']
+        except:
+            U = torch.load(os.path.join(self.path_deafult, 'U.pt'))
+            f_vector = torch.load(os.path.join(self.path_deafult, 'f_vector.pt'))
+            id = torch.load(os.path.join(self.path_deafult, 'id.pt'))
+            load_dict = np.load(os.path.join(self.path_deafult, 'profile_dic.npy'), allow_pickle=True).item()
+            eta_load = np.load(os.path.join(self.path_deafult, 'eta_dic.npy'), allow_pickle=True).item()
+            eta = eta_load['eta']
+            k=load_dict['k']
+        print("eta:{}".format(eta))
+        if self.red_capture(self.img_list[0]) is False:
+            return "手指未覆盖"
+        if self.slots_list is None:
+            return "提取的心波无效"
         print(f_vector.shape)
         self.band_pass()
         self.high_pass1()
         self.high_pass2()
         dist=[]
+        cont=0
+        flag1=False
+        flag2=False
         for slot in self.slots_list:
+            if cont%2==0:
+                flag1 = False
+                flag2 = False
             s_features = slot.Get_Features()
             feature_list=[]
             feature_list.append(s_features)
@@ -351,8 +418,18 @@ class divide:
                 s.append(T_list[i])
             s = torch.tensor(s).transpose(0, 1)
             dis=self.dist(f_vector,s)
-            print(dis)
+            if dis<=eta:
+                if cont%2==0:
+                    flag1=True
+                else:
+                    flag2=True
+            if flag1 and flag2:
+                return "验证通过"
+
+            print("dist:{},<=eta:{},cont%2:{}".format(dis,dis<=eta,cont%2))
             dist.append(dis)
+            cont=cont+1
+        return "验证不通过"
         dist=torch.tensor(dist)
         print('k:{}'.format(k))
         print("max")
@@ -362,7 +439,7 @@ class divide:
         print("min")
         print(dist.min())
         var=torch.var(dist,unbiased=False)
-        return dist.tolist(),var ,dist.max(),dist.min(),dist.sum()/dist.shape[0]
+        # return dist.tolist(),var ,dist.max(),dist.min(),dist.sum()/dist.shape[0]
 
     def getDistList(self):
         try:

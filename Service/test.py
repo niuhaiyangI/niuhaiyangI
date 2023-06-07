@@ -15,10 +15,10 @@ from wsgiref.simple_server import make_server
 video_path="D:\\毕业设计\\niuhaiyangI\\实验素材\\profile\\30fps.mp4"
 
 
-# match_path="D:\\毕业设计\\niuhaiyangI\\实验素材\\11.mp4"
+match_path="D:\\毕业设计\\niuhaiyangI\\实验素材\\11.mp4"
 # match_path="D:\\毕业设计\\niuhaiyangI\\实验素材\\test\\5.mp4"
-# match_path="D:\\毕业设计\\niuhaiyangI\\实验素材\\test\\pos\\4.mp4"
-match_path="D:\\毕业设计\\niuhaiyangI\\实验素材\\test\\neg30fps1080p\\qi.mp4"
+# match_path="D:\\毕业设计\\niuhaiyangI\\实验素材\\test\\pos\\5.mp4"
+# match_path="D:\\毕业设计\\niuhaiyangI\\实验素材\\test\\neg30fps1080p\\wyh.mp4"
 
 # match_path="D:\\毕业设计\\niuhaiyangI\\实验素材\\11.mp4"
 import matplotlib.pyplot as plt
@@ -61,6 +61,7 @@ if __name__ == '__main__':
     div=divide(camera)
     # div.show_red_channel()
     # div.profile_feature("Niu Haiyang")
-    div.match()
+    str=div.match()
+    print(str)
 
 # See PyCharm help at https://www.jetbrains.com/help/pycharm/

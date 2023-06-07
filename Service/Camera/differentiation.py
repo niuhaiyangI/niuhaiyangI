@@ -29,7 +29,7 @@ class SLOT:
         self.max_average=self.red_average.max()
         self.min_frame=s_list[self.red_average.argmin()]
         self.min_average=self.red_average.min()
-        self.bin_size = 10
+        self.bin_size = 5
         self.bin = [x for x in range(256) if x % int(256 / self.bin_size) == 0]
         self.diff=self.max_frame-self.min_frame
         M_temp=np.zeros(self.diff.shape)
@@ -125,7 +125,7 @@ class SLOT:
         red_channel = (red_channel - red_channel.min()) / (red_channel.max() - red_channel.min())
         green_channel = (green_channel - green_channel.min()) / (green_channel.max() - green_channel.min())
         blue_channel = (blue_channel - blue_channel.min()) / (blue_channel.max() - blue_channel.min())
-        red_faeture=self.N_feature_get(red_channel,red=True)
+        red_faeture=self.N_feature_get(red_channel)
         green_faeture = self.N_feature_get(green_channel)
         blue_faeture = self.N_feature_get(blue_channel)
         return red_faeture, green_faeture, blue_faeture
@@ -150,12 +150,14 @@ class SLOT:
         plt.plot(x, green_channel.tolist(), color='g', label='绿色通道')
         plt.plot(x, blue_channel.tolist(), color='b', label='蓝色通道')
         font=15
-        plt.xlabel('归一化心动时间')
-        plt.ylabel('归一化心动幅度')
-        plt.title('归一化三色通道光强图')
+        plt.xlabel('归一化心动时间',fontsize=font)
+        plt.ylabel('归一化心动幅度',fontsize=font)
+        plt.xticks(fontsize=font)
+        plt.yticks(fontsize=font)
+        # plt.title('归一化三色通道光强图')
         # plt.xlabel('Normalized cardiac time')
         # plt.ylabel('Normalized cardiac amplitude')
-        plt.legend(loc='best')
+        plt.legend(loc='best',fontsize=font)
         # check=sum
         # # check=red_channel
         # plt.plot(x, check.tolist(), color='black', label='blue_average')
@@ -351,28 +353,28 @@ class SLOT:
         # band5 = [0.8, 1.0]
         # default5 = 0.9
 
-        # band1 = [0.1, 0.3]
-        # default1 = 0.2
-        # band2 = [0.4, 0.6]
-        # default2 = 0.3
-        # band3 = [0.6, 0.8]
-        # default3 = 0.5
-        # band4 = [0.71, 0.9]
-        # default4 = 0.75
-        # band5 = [0.8, 1.0]
-        # default5 = 0.9
-
-        band1 = [0.0, 0.1]
+        band1 = [0.1, 0.3]
         default1 = 0.2
-        band2 = [0.2, 0.4]
+        band2 = [0.4, 0.6]
         default2 = 0.3
-        band3 = [0.4, 0.6]
+        band3 = [0.6, 0.8]
         default3 = 0.5
-        band4 = [0.6, 0.7]
-        default4 = 0.7
-        band5 = [0.7, 1.0]
+        band4 = [0.71, 0.9]
+        default4 = 0.75
+        band5 = [0.8, 1.0]
         default5 = 0.9
-        font=18
+
+        # band1 = [0.0, 0.1]
+        # default1 = 0.2
+        # band2 = [0.2, 0.4]
+        # default2 = 0.3
+        # band3 = [0.4, 0.6]
+        # default3 = 0.5
+        # band4 = [0.6, 0.7]
+        # default4 = 0.7
+        # band5 = [0.7, 1.0]
+        # default5 = 0.9
+        font=15
         check = input.tolist()
         check_neg=(-input).tolist()
         Series = pd.Series(check)
@@ -431,19 +433,19 @@ class SLOT:
             plt.axvline(x=0, ymin=0, ymax=check[0], c="k", ls="--", lw=0.5)
             plt.axvline(x=1.0, ymin=0, ymax=check[-1], c="k", ls="--", lw=0.5)
             plt.scatter(y1_x/(self.slot_size - 1), check[y1_x], color='r', s=50)  # 在最大值点上绘制一个红色的圆点
-            plt.text(y1_x/(self.slot_size - 1)+0.05, check[y1_x]+0.01,'y1')
+            plt.text(y1_x/(self.slot_size - 1)+0.05, check[y1_x]+0.01,'y1',fontsize=font)
             plt.axvline(x=y1_x/(self.slot_size - 1), ymin=0, ymax=check[y1_x], c="k", ls="--", lw=0.5)
             plt.scatter(y2_x/(self.slot_size - 1), check[y2_x]+0.01, color='r', s=50)  # 在最大值点上绘制一个红色的圆点
-            plt.text(y2_x/(self.slot_size - 1)+0.05, check[y2_x],'y2')
+            plt.text(y2_x/(self.slot_size - 1)+0.05, check[y2_x],'y2',fontsize=font)
             plt.axvline(x=y2_x / (self.slot_size - 1), ymin=0, ymax=check[y2_x], c="k", ls="--", lw=0.5)
             plt.scatter(y3_x/(self.slot_size - 1), check[y3_x]+0.01, color='r', s=50)  # 在最大值点上绘制一个红色的圆点
-            plt.text(y3_x/(self.slot_size - 1)+0.05, check[y3_x],'y3')
+            plt.text(y3_x/(self.slot_size - 1)+0.05, check[y3_x],'y3',fontsize=font)
             plt.axvline(x=y3_x / (self.slot_size - 1), ymin=0, ymax=check[y3_x], c="k", ls="--", lw=0.5)
             plt.scatter(y4_x / (self.slot_size - 1), check[y4_x] + 0.01, color='r', s=50)  # 在最大值点上绘制一个红色的圆点
-            plt.text(y4_x / (self.slot_size - 1)+0.05, check[y4_x], 'y4')
+            plt.text(y4_x / (self.slot_size - 1)+0.05, check[y4_x], 'y4',fontsize=font)
             plt.axvline(x=y4_x / (self.slot_size - 1), ymin=0, ymax=check[y4_x], c="k", ls="--", lw=0.5)
             plt.scatter(y5_x / (self.slot_size - 1), check[y5_x] + 0.01, color='r', s=50)  # 在最大值点上绘制一个红色的圆点
-            plt.text(y5_x / (self.slot_size - 1)+0.05, check[y5_x], 'y5')
+            plt.text(y5_x / (self.slot_size - 1)+0.05, check[y5_x], 'y5',fontsize=font)
             plt.axvline(x=y5_x / (self.slot_size - 1), ymin=0, ymax=check[y5_x], c="k", ls="--", lw=0.5)
             plt.axhline(y=0, xmin=y1_x / (self.slot_size - 1), xmax=y2_x / (self.slot_size - 1), c='k', ls='solid', lw=0.5)
             plt.axhline(y=0, xmin=y2_x / (self.slot_size - 1), xmax=y3_x / (self.slot_size - 1), c='k', ls='solid', lw=0.5)
@@ -454,11 +456,13 @@ class SLOT:
                         lw=0.5)
             plt.axhline(0)
             plt.axvline(0)
-            plt.text(y2_x/ (self.slot_size - 1)-0.05, -0.04, 'x1')
-            plt.text(y3_x/ (self.slot_size - 1)-0.05, -0.04, 'x2')
-            plt.text(y4_x / (self.slot_size - 1)-0.05, -0.04, 'x3')
-            plt.text(y5_x / (self.slot_size - 1)-0.05, -0.04, 'x4')
-            plt.text(1.0, -0.04, 'x5')
+            plt.text(y2_x/ (self.slot_size - 1)-0.05, -0.04, 'x1',fontsize=font)
+            plt.text(y3_x/ (self.slot_size - 1)-0.05, -0.04, 'x2',fontsize=font)
+            plt.text(y4_x / (self.slot_size - 1)-0.05, -0.04, 'x3',fontsize=font)
+            plt.text(y5_x / (self.slot_size - 1)-0.05, -0.04, 'x4',fontsize=font)
+            plt.text(1.0, -0.04, 'x5',fontsize=font)
+            plt.xticks(fontsize=font)
+            plt.yticks(fontsize=font)
             plt.title('非基准特征（红色通道）',fontsize=font)
             plt.xlabel('归一化心动时间',fontsize=font)
             plt.ylabel('归一化心动幅度（红色通道）',fontsize=font)
