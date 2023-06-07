@@ -1,0 +1,32 @@
+%%
+% The BIThesis Template for Bachelor Graduation Thesis
+%
+% 北京理工大学毕业设计（论文）中英文摘要 —— 使用 XeLaTeX 编译
+%
+% Copyright 2020-2023 BITNP
+%
+% This work may be distributed and/or modified under the
+% conditions of the LaTeX Project Public License, either version 1.3
+% of this license or (at your option) any later version.
+% The latest version of this license is in
+%   http://www.latex-project.org/lppl.txt
+% and version 1.3 or later is part of all distributions of LaTeX
+% version 2005/12/01 or later.
+%
+% This work has the LPPL maintenance status `maintained'.
+%
+% The Current Maintainer of this work is Feng Kaiyu.
+
+% 中英文摘要章节
+\begin{abstract}
+% 中文摘要正文从这里开始
+{随着移动互联网设备（如智能手机、平板电脑、智能手表）的日益普及，这些个人设备存储了大量敏感信息，非法用户盗取个人信息或非法使用设备将会对用户造成严重损失。现有的认证方法大多依赖用户自定义的密码，或者依赖专用的生物特征传感器（如指纹传感器）。本文旨在实现一种低成本的、可以在各类设备上通用的、不依赖特殊传感器的心脏生物特征验证方法。我们通过用户指尖按压摄像头得到的视频来获取心脏的运动模式，并通过像素点的动态筛选和滤波等方式消除呼吸、指尖移动、颤抖等因素的干扰，提取心脏运动的收缩舒张特征和非基准特征，此外使用特征转换抑制心跳运动的小幅变化，最终提取有效的心脏生物特征，实现用户认证。实验将一名志愿者作为合法用户生成用于匹配的配置文件，再录入这名志愿者和其他志愿者的指尖按压视频分别作为测试的正样例和负样例。实验结果表明，该方法在攻击用户的测试下最高能达到96.23\%的拒绝率，具有较高的安全性；在合法用户的测试下最高能达到88\%的通过率，验证效率较高。该方法对于图像采集的帧率和分辨率要求较低，在普通设备上具有部署的可行性。}
+
+\end{abstract}
+
+% 英文摘要章节
+\begin{abstractEn}
+% 英文摘要正文从这里开始
+{With the growing popularity of mobile internet device (such as smart phones, tablets, smart watches), these personal devices store a large amount of sensitive information. Illegal users who steal personal information or illegally use devices will cause serious losses to users. Most existing authentication methods rely on user-defined passwords or specialized biometric sensors such as fingerprint sensors. This article aims to implement a low-cost heart biometric feature verification method that can be universally used on various devices and does not rely on special sensors. We obtain the motion mode of the heart through the video obtained by pressing the user's fingertip on the camera, and eliminate the interference of breathing, fingertip movement, tremor, and other factors through pixel dynamic filtering and filtering. We extract the systolic-diastolic features and non-fiducial features of heart movement. In addition, we use feature transformation to suppress small changes in heart movement, and ultimately extract effective heart biometrics to achieve user authentication. In the experiment, a volunteer was used as a legitimate user to generate a configuration file for matching, and then the fingertip pressing videos of this volunteer and other volunteers were recorded as positive and negative samples for testing, respectively. The experimental results show that this method can achieve a maximum rejection rate of 96.23\% under the test of attacking users, and has high security; Under the testing of legitimate users, the highest pass rate can reach 88\%, with high verification efficiency. This method has low requirements for frame rate and resolution of image acquisition, and is feasible for deployment on ordinary devices.}
+
+\end{abstractEn}
